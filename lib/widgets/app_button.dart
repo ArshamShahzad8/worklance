@@ -60,40 +60,44 @@ class AppButton extends StatelessWidget {
         EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       ),
       shape: WidgetStatePropertyAll(
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppConstants.radiusMd)),
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+        ),
       ),
       textStyle: WidgetStatePropertyAll(
-        Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+        Theme.of(
+          context,
+        ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
       ),
     );
 
     final Widget button = switch (variant) {
       AppButtonVariant.primary || AppButtonVariant.danger => FilledButton(
-          onPressed: loading ? null : onPressed,
-          style: FilledButton.styleFrom(
-            backgroundColor: variant == AppButtonVariant.danger
-                ? AppColors.error
-                : AppColors.primary,
-            foregroundColor: Colors.white,
-          ).merge(sizeAndShape),
-          child: child,
-        ),
+        onPressed: loading ? null : onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: variant == AppButtonVariant.danger
+              ? AppColors.error
+              : AppColors.primary,
+          foregroundColor: Colors.white,
+        ).merge(sizeAndShape),
+        child: child,
+      ),
       AppButtonVariant.outline => OutlinedButton(
-          onPressed: loading ? null : onPressed,
-          style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.primary,
-            side: const BorderSide(color: AppColors.primary, width: 1.2),
-          ).merge(sizeAndShape),
-          child: child,
-        ),
+        onPressed: loading ? null : onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.primary,
+          side: const BorderSide(color: AppColors.primary, width: 1.2),
+        ).merge(sizeAndShape),
+        child: child,
+      ),
       AppButtonVariant.text => TextButton(
-          onPressed: loading ? null : onPressed,
-          style: TextButton.styleFrom(
-            foregroundColor: AppColors.primary,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          ),
-          child: child,
+        onPressed: loading ? null : onPressed,
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.primary,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
+        child: child,
+      ),
     };
 
     return button;

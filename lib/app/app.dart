@@ -16,7 +16,8 @@ class WorklanceApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appStore = store ??
+    final appStore =
+        store ??
         AppStore(
           favorites: FavoritesController(),
           user: UserController(MockData.currentUser),

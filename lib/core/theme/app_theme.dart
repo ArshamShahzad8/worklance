@@ -9,22 +9,23 @@ import 'app_text_styles.dart';
 /// Component themes (buttons, cards, inputs, navigation bar, chips, ...)
 /// are defined once here so every screen looks and behaves the same.
 ThemeData buildAppTheme() {
-  final colorScheme = ColorScheme.fromSeed(seedColor: AppColors.primary).copyWith(
-    primary: AppColors.primary,
-    onPrimary: AppColors.onPrimary,
-    primaryContainer: AppColors.primaryContainer,
-    onPrimaryContainer: AppColors.onPrimaryContainer,
-    secondary: AppColors.accent,
-    onSecondary: AppColors.onAccent,
-    secondaryContainer: AppColors.accentContainer,
-    onSecondaryContainer: AppColors.onAccent,
-    error: AppColors.error,
-    surface: AppColors.surface,
-    onSurface: AppColors.textPrimary,
-    onSurfaceVariant: AppColors.textSecondary,
-    outline: AppColors.border,
-    outlineVariant: AppColors.border,
-  );
+  final colorScheme = ColorScheme.fromSeed(seedColor: AppColors.primary)
+      .copyWith(
+        primary: AppColors.primary,
+        onPrimary: AppColors.onPrimary,
+        primaryContainer: AppColors.primaryContainer,
+        onPrimaryContainer: AppColors.onPrimaryContainer,
+        secondary: AppColors.accent,
+        onSecondary: AppColors.onAccent,
+        secondaryContainer: AppColors.accentContainer,
+        onSecondaryContainer: AppColors.onAccent,
+        error: AppColors.error,
+        surface: AppColors.surface,
+        onSurface: AppColors.textPrimary,
+        onSurfaceVariant: AppColors.textSecondary,
+        outline: AppColors.border,
+        outlineVariant: AppColors.border,
+      );
 
   final textTheme = AppTextStyles.buildTextTheme();
 
@@ -56,7 +57,9 @@ ThemeData buildAppTheme() {
       filled: true,
       fillColor: AppColors.surfaceVariant,
       hintStyle: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
-      labelStyle: textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+      labelStyle: textTheme.bodyMedium?.copyWith(
+        color: AppColors.textSecondary,
+      ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       prefixIconColor: AppColors.textMuted,
       suffixIconColor: AppColors.textSecondary,
@@ -138,7 +141,11 @@ ThemeData buildAppTheme() {
       ),
       elevation: 4,
     ),
-    dividerTheme: const DividerThemeData(color: AppColors.border, thickness: 1, space: 1),
+    dividerTheme: const DividerThemeData(
+      color: AppColors.border,
+      thickness: 1,
+      space: 1,
+    ),
     checkboxTheme: CheckboxThemeData(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
     ),
@@ -153,6 +160,8 @@ ThemeData buildAppTheme() {
             : AppColors.surfaceVariant,
       ),
     ),
-    progressIndicatorTheme: const ProgressIndicatorThemeData(color: AppColors.primary),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(
+      color: AppColors.primary,
+    ),
   );
 }

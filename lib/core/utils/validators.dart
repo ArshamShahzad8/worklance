@@ -63,5 +63,6 @@ String? validateConfirmPassword(String? value, String password) {
 }
 
 /// Terms & Conditions checkbox must be accepted to register.
-String? validateTermsAccepted(bool? accepted) =>
-    accepted == true ? null : 'Please accept the Terms & Conditions to continue';
+String? validateTermsAccepted(bool? accepted) => accepted == true
+    ? null
+    : 'Please accept the Terms & Conditions to continue';

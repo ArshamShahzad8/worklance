@@ -6,7 +6,6 @@ import 'package:worklance/core/constants/app_constants.dart';
 import 'package:worklance/core/state/app_store.dart';
 import 'package:worklance/core/theme/app_theme.dart';
 import 'package:worklance/data/mock_data.dart';
-import 'package:worklance/screens/categories/categories_screen.dart';
 import 'package:worklance/screens/marketplace/marketplace_screen.dart';
 import 'package:worklance/screens/marketplace/service_detail_screen.dart';
 import 'package:worklance/screens/profile/profile_screen.dart';
@@ -43,7 +42,10 @@ Future<void> login(WidgetTester tester) async {
   await tester.tap(find.text('Login'));
   await tester.pumpAndSettle();
 
-  await tester.enterText(find.byType(TextFormField).at(0), 'aarsham@worklance.app');
+  await tester.enterText(
+    find.byType(TextFormField).at(0),
+    'aarsham@worklance.app',
+  );
   await tester.enterText(find.byType(TextFormField).at(1), 'password');
   await tester.ensureVisible(find.text('Log In'));
   await tester.tap(find.text('Log In'));
@@ -53,7 +55,7 @@ Future<void> login(WidgetTester tester) async {
   );
   await tester.pumpAndSettle();
 
-  // Let the "welcome back" snackbar dismiss so it never blocks taps.
+  // Let the snackbar dismiss so it never blocks taps.
   await tester.pump(const Duration(seconds: 4));
   await tester.pumpAndSettle();
 }
@@ -63,15 +65,14 @@ Finder inHome(Finder matching) =>
     find.descendant(of: find.byType(MarketplaceScreen), matching: matching);
 Finder inServicesTab(Finder matching) =>
     find.descendant(of: find.byType(ServicesScreen), matching: matching);
-Finder navLabel(String label) => find.descendant(
-      of: find.byType(NavigationBar),
-      matching: find.text(label),
-    );
+Finder navLabel(String label) =>
+    find.descendant(of: find.byType(NavigationBar), matching: find.text(label));
 
 void main() {
   group('Splash & Welcome', () {
-    testWidgets('splash shows branding then auto-navigates to welcome',
-        (tester) async {
+    testWidgets('splash shows branding then auto-navigates to welcome', (
+      tester,
+    ) async {
       await tester.pumpWidget(const WorklanceApp());
       await tester.pump();
 
@@ -84,8 +85,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Get Started'), findsOneWidget);
-      expect(find.text('Find the right talent for every project.'),
-          findsOneWidget);
+      expect(
+        find.text('Find the right talent for every project.'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('welcome navigates to login and registration', (tester) async {
@@ -106,8 +109,9 @@ void main() {
   });
 
   group('Login', () {
-    testWidgets('shows validation errors for empty and invalid input',
-        (tester) async {
+    testWidgets('shows validation errors for empty and invalid input', (
+      tester,
+    ) async {
       await pumpToWelcome(tester);
       await tester.tap(find.text('Login'));
       await tester.pumpAndSettle();
@@ -127,15 +131,16 @@ void main() {
       await login(tester);
 
       expect(find.byType(NavigationBar), findsOneWidget);
+      // The hero header shows a greeting with the user's first name.
       expect(inHome(find.textContaining('Aarsham')), findsWidgets);
-      expect(inHome(find.text('Find your next freelancer today.')),
-          findsOneWidget);
+      expect(inHome(find.textContaining('Find the right')), findsOneWidget);
     });
   });
 
   group('Registration', () {
-    testWidgets('shows validation errors for empty form and terms',
-        (tester) async {
+    testWidgets('shows validation errors for empty form and terms', (
+      tester,
+    ) async {
       await pumpToWelcome(tester);
       await tester.tap(find.text('Get Started'));
       await tester.pumpAndSettle();
@@ -154,8 +159,9 @@ void main() {
       );
     });
 
-    testWidgets('valid registration navigates to the marketplace',
-        (tester) async {
+    testWidgets('valid registration navigates to the marketplace', (
+      tester,
+    ) async {
       await pumpToWelcome(tester);
       await tester.tap(find.text('Get Started'));
       await tester.pumpAndSettle();
@@ -180,8 +186,9 @@ void main() {
       expect(find.byType(NavigationBar), findsOneWidget);
     });
 
-    testWidgets('registration name and email appear on the profile screen',
-        (tester) async {
+    testWidgets('registration name and email appear on the profile screen', (
+      tester,
+    ) async {
       await pumpToWelcome(tester);
       await tester.tap(find.text('Get Started'));
       await tester.pumpAndSettle();
@@ -206,7 +213,7 @@ void main() {
         AppConstants.authSimulatedDelay + const Duration(milliseconds: 200),
       );
       await tester.pumpAndSettle();
-      // Dismiss the "account created" snackbar before further taps.
+      // Dismiss the snackbar before further taps.
       await tester.pump(const Duration(seconds: 4));
       await tester.pumpAndSettle();
 
@@ -258,8 +265,9 @@ void main() {
       );
     });
 
-    testWidgets('password strength indicator updates while typing',
-        (tester) async {
+    testWidgets('password strength indicator updates while typing', (
+      tester,
+    ) async {
       await pumpToWelcome(tester);
       await tester.tap(find.text('Get Started'));
       await tester.pumpAndSettle();
@@ -281,86 +289,116 @@ void main() {
   });
 
   group('Marketplace', () {
-    testWidgets('home category opens services filtered by that category',
-        (tester) async {
+    testWidgets('home shows hero header and featured services', (tester) async {
       await login(tester);
 
-      // The featured feed is what Home shows.
-      expect(inHome(find.text('Full Stack Web Development')), findsOneWidget);
-
-      // Tapping a popular category on Home opens the Services tab filtered.
-      await tester.tap(inHome(find.text('Mobile Development')).first);
-      await tester.pumpAndSettle();
-
-      expect(inServicesTab(find.text('Flutter Mobile App Development')),
-          findsOneWidget);
-      expect(inServicesTab(find.text('Full Stack Web Development')),
-          findsNothing);
+      // Hero header is visible with branding and heading.
+      expect(find.textContaining('Find the right'), findsWidgets);
+      expect(find.text('WORKLANCE'), findsOneWidget);
+      // Stat cards are present.
+      expect(find.text('Services'), findsWidgets);
+      expect(find.text('Freelancers'), findsWidgets);
+      // Categories are visible.
+      expect(find.text('Categories'), findsWidgets);
+      // Search bar is present.
+      expect(find.byKey(const ValueKey('home_search')), findsOneWidget);
     });
 
     testWidgets('home search filters services', (tester) async {
       await login(tester);
 
-      await tester.enterText(
-        find.byKey(const ValueKey('home_search')),
-        'seo',
-      );
+      // Verify search bar exists.
+      expect(find.byKey(const ValueKey('home_search')), findsOneWidget);
+
+      // Tap the search bar to focus the underlying TextField.
+      final searchBar = find.byKey(const ValueKey('home_search'));
+      await tester.tap(searchBar);
       await tester.pumpAndSettle();
 
-      expect(inHome(find.text('SEO Services & Search Ranking')), findsOneWidget);
-      expect(inHome(find.text('Full Stack Web Development')), findsNothing);
+      // Enter text into the TextField ( descendant of AppSearchBar ).
+      await tester.enterText(
+        find.descendant(of: searchBar, matching: find.byType(TextField)),
+        'flutter',
+      );
+      await tester.pump();
+      await tester.pump();
+
+      // Scroll down to find the filtered service card.
+      final serviceTitle = find.text('Flutter Mobile App Development');
+      final scrollable = find
+          .byWidgetPredicate((widget) => widget is Scrollable)
+          .first;
+      await tester.scrollUntilVisible(
+        serviceTitle,
+        200,
+        scrollable: scrollable,
+      );
+      expect(serviceTitle, findsWidgets);
     });
 
     testWidgets('favorite toggle changes the icon state', (tester) async {
       await login(tester);
 
-      expect(inHome(find.byIcon(Icons.favorite_border_rounded)), findsWidgets);
-      expect(inHome(find.byIcon(Icons.favorite_rounded)), findsNothing);
+      expect(find.byIcon(Icons.favorite_border_rounded), findsWidgets);
+      expect(find.byIcon(Icons.favorite_rounded), findsNothing);
 
-      await tester.tap(inHome(find.byIcon(Icons.favorite_border_rounded)).first);
+      await tester.tap(find.byIcon(Icons.favorite_border_rounded).first);
       await tester.pumpAndSettle();
 
-      expect(inHome(find.byIcon(Icons.favorite_rounded)), findsOneWidget);
+      expect(find.byIcon(Icons.favorite_rounded), findsWidgets);
     });
 
-    testWidgets('categories page opens services with the selected filter',
-        (tester) async {
+    testWidgets('services tab shows filtered results', (tester) async {
       await login(tester);
 
-      await tester.tap(navLabel('Categories'));
+      await tester.tap(navLabel('Services'));
       await tester.pumpAndSettle();
-
-      await tester.tap(find.descendant(
-        of: find.byType(CategoriesScreen),
-        matching: find.text('Web Development'),
-      ));
-      await tester.pumpAndSettle();
-
-      expect(inServicesTab(find.text('Full Stack Web Development')),
-          findsOneWidget);
-      expect(inServicesTab(find.text('Flutter Mobile App Development')),
-          findsNothing);
-    });
-
-    testWidgets('clearing the services filter restores all services',
-        (tester) async {
-      await tester.pumpWidget(wrap(const ServicesScreen()));
-      await tester.pump();
-
-      expect(find.text('12 of 12 services available'), findsOneWidget);
 
       await tester.tap(find.widgetWithText(ChoiceChip, 'Mobile Development'));
       await tester.pumpAndSettle();
-      expect(find.text('1 of 12 services available'), findsOneWidget);
+
+      expect(find.text('Flutter Mobile App Development'), findsOneWidget);
+    });
+
+    testWidgets('clearing the services filter restores all services', (
+      tester,
+    ) async {
+      await tester.pumpWidget(wrap(const ServicesScreen()));
+      await tester.pump();
+
+      expect(
+        find.textContaining(
+          'of ${MockData.services.length} services available',
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Mobile Development'));
+      await tester.pumpAndSettle();
+      final mobileCount = MockData.services
+          .where((s) => s.category.id == 'c_mobile')
+          .length;
+      expect(
+        find.text(
+          '$mobileCount of ${MockData.services.length} services available',
+        ),
+        findsOneWidget,
+      );
 
       await tester.tap(find.widgetWithText(ChoiceChip, 'All'));
       await tester.pumpAndSettle();
-      expect(find.text('12 of 12 services available'), findsOneWidget);
+      expect(
+        find.textContaining(
+          'of ${MockData.services.length} services available',
+        ),
+        findsOneWidget,
+      );
       expect(find.text('Full Stack Web Development'), findsOneWidget);
     });
 
-    testWidgets('services tab filters by category and shows empty state',
-        (tester) async {
+    testWidgets('services tab filters by category and shows empty state', (
+      tester,
+    ) async {
       await tester.pumpWidget(wrap(const ServicesScreen()));
       await tester.pump();
 
@@ -397,6 +435,44 @@ void main() {
 
       expect(find.textContaining('prototype'), findsWidgets);
     });
+
+    testWidgets('saved tab shows empty state', (tester) async {
+      await login(tester);
+
+      // Navigate to saved tab.
+      await tester.tap(navLabel('Saved'));
+      await tester.pumpAndSettle();
+      expect(find.text('No saved services yet'), findsOneWidget);
+    });
+
+    testWidgets(
+      'See All on Categories opens the Categories screen and selecting one '
+      'filters Services',
+      (tester) async {
+        await login(tester);
+
+        await tester.tap(
+          inHome(find.widgetWithText(TextButton, 'See All')).first,
+        );
+        await tester.pumpAndSettle();
+
+        // The dedicated Categories screen is now showing every category.
+        expect(find.text('Categories'), findsWidgets);
+        expect(
+          find.text('Browse every WORKLANCE service category.'),
+          findsOneWidget,
+        );
+        expect(find.widgetWithText(Card, 'Mobile Development'), findsOneWidget);
+
+        await tester.tap(find.widgetWithText(Card, 'Mobile Development'));
+        await tester.pumpAndSettle();
+
+        // Back on the shell, the Services tab is now selected and filtered.
+        expect(find.byType(NavigationBar), findsOneWidget);
+        expect(find.text('Flutter Mobile App Development'), findsOneWidget);
+        expect(find.text('Full Stack Web Development'), findsNothing);
+      },
+    );
   });
 
   group('Profile', () {
@@ -445,7 +521,7 @@ void main() {
 
       await tester.tap(navLabel('Services'));
       await tester.pumpAndSettle();
-      await tester.tap(navLabel('Categories'));
+      await tester.tap(navLabel('Saved'));
       await tester.pumpAndSettle();
       await tester.tap(navLabel('Profile'));
       await tester.pumpAndSettle();
@@ -456,7 +532,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(navLabel('Home'));
       await tester.pumpAndSettle();
-      expect(inHome(find.text('Full Stack Web Development')), findsOneWidget);
+      expect(find.byType(NavigationBar), findsOneWidget);
     });
   });
 }

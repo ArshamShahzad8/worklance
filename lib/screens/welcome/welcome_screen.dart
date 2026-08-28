@@ -77,8 +77,9 @@ class WelcomeScreen extends StatelessWidget {
                         AppButton(
                           label: 'Get Started',
                           icon: Icons.arrow_forward_rounded,
-                          onPressed: () => Navigator.of(context)
-                              .pushNamed(AppRoutes.register),
+                          onPressed: () => Navigator.of(
+                            context,
+                          ).pushNamed(AppRoutes.register),
                         ),
                         const SizedBox(height: AppConstants.spaceSm),
                         Wrap(
@@ -92,8 +93,9 @@ class WelcomeScreen extends StatelessWidget {
                               ),
                             ),
                             TextButton(
-                              onPressed: () => Navigator.of(context)
-                                  .pushNamed(AppRoutes.login),
+                              onPressed: () => Navigator.of(
+                                context,
+                              ).pushNamed(AppRoutes.login),
                               child: const Text('Login'),
                             ),
                           ],

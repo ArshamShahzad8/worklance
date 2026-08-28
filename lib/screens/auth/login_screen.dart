@@ -7,6 +7,7 @@ import '../../core/utils/validators.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/brand_logo.dart';
+
 /// Login screen.
 ///
 /// Includes form validation, show/hide password, remember-me checkbox,
@@ -49,16 +50,15 @@ class _LoginScreenState extends State<LoginScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Welcome back to ${AppConstants.appName}!')),
     );
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      AppRoutes.marketplace,
-      (route) => false,
-    );
+    Navigator.of(
+      context,
+    ).pushNamedAndRemoveUntil(AppRoutes.marketplace, (route) => false);
   }
 
   void _showPrototypeMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -139,8 +139,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               Checkbox(
                                 value: _rememberMe,
-                                onChanged: (value) =>
-                                    setState(() => _rememberMe = value ?? false),
+                                onChanged: (value) => setState(
+                                  () => _rememberMe = value ?? false,
+                                ),
                               ),
                               const SizedBox(width: 4),
                               Expanded(
@@ -162,8 +163,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                         MaterialTapTargetSize.shrinkWrap,
                                   ),
                                   onPressed: () => _showPrototypeMessage(
-                                    'Password reset is a prototype placeholder '
-                                    'in this Week 1 build.',
+                                    'Password reset is a prototype '
+                                    'placeholder.',
                                   ),
                                   child: const Text(
                                     'Forgot password?',
@@ -205,8 +206,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               Expanded(
                                 child: OutlinedButton.icon(
                                   onPressed: () => _showPrototypeMessage(
-                                    'Google sign-in is a placeholder in this '
-                                    'Week 1 build.',
+                                    'Google sign-in is a prototype '
+                                    'placeholder.',
                                   ),
                                   icon: const Icon(Icons.g_mobiledata_rounded),
                                   label: const Text('Google'),
@@ -216,8 +217,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               Expanded(
                                 child: OutlinedButton.icon(
                                   onPressed: () => _showPrototypeMessage(
-                                    'Apple sign-in is a placeholder in this '
-                                    'Week 1 build.',
+                                    'Apple sign-in is a prototype '
+                                    'placeholder.',
                                   ),
                                   icon: const Icon(Icons.apple_rounded),
                                   label: const Text('Apple'),
@@ -237,8 +238,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                               TextButton(
-                                onPressed: () => Navigator.of(context)
-                                    .pushReplacementNamed(AppRoutes.register),
+                                onPressed: () => Navigator.of(
+                                  context,
+                                ).pushReplacementNamed(AppRoutes.register),
                                 child: const Text('Create one'),
                               ),
                             ],

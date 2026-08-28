@@ -12,6 +12,7 @@ abstract final class AppConstants {
   // --- Timing ---
   /// How long the splash screen stays visible before auto-navigating.
   static const Duration splashDuration = Duration(milliseconds: 2400);
+
   /// Fake network delay used by the prototype auth flows.
   static const Duration authSimulatedDelay = Duration(milliseconds: 1200);
 

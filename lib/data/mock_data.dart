@@ -56,6 +56,12 @@ abstract final class MockData {
       icon: Icons.edit_note_rounded,
       description: 'Clear copy that converts readers to customers.',
     ),
+    const Category(
+      id: 'c_video',
+      name: 'Video Editing',
+      icon: Icons.videocam_rounded,
+      description: 'Professional video production and editing.',
+    ),
   ];
 
   static final List<Freelancer> freelancers = [
@@ -72,6 +78,7 @@ abstract final class MockData {
       skills: const ['JavaScript', 'React', 'Node.js', 'PostgreSQL'],
       location: 'Rawalpindi, Pakistan',
       memberSince: 'Member since 2021',
+      completedJobs: 245,
     ),
     Freelancer(
       id: 'f_ayesha',
@@ -86,6 +93,7 @@ abstract final class MockData {
       skills: const ['Flutter', 'Dart', 'REST APIs', 'UI Animation'],
       location: 'Lahore, Pakistan',
       memberSince: 'Member since 2022',
+      completedJobs: 167,
     ),
     Freelancer(
       id: 'f_daniel',
@@ -100,6 +108,7 @@ abstract final class MockData {
       skills: const ['Figma', 'Prototyping', 'Design Systems', 'Usability'],
       location: 'Lisbon, Portugal',
       memberSince: 'Member since 2020',
+      completedJobs: 312,
     ),
     Freelancer(
       id: 'f_liam',
@@ -114,6 +123,7 @@ abstract final class MockData {
       skills: const ['React', 'Next.js', 'TypeScript', 'Tailwind'],
       location: 'Dubai, UAE',
       memberSince: 'Member since 2022',
+      completedJobs: 98,
     ),
     Freelancer(
       id: 'f_sofia',
@@ -125,9 +135,15 @@ abstract final class MockData {
       bio:
           'Brand designer helping startups look credible from day one. '
           'I craft logos, color systems and guidelines that scale.',
-      skills: const ['Logo Design', 'Brand Strategy', 'Illustrator', 'Typography'],
+      skills: const [
+        'Logo Design',
+        'Brand Strategy',
+        'Illustrator',
+        'Typography',
+      ],
       location: 'Karachi, Pakistan',
       memberSince: 'Member since 2021',
+      completedJobs: 234,
     ),
     Freelancer(
       id: 'f_marcus',
@@ -142,6 +158,7 @@ abstract final class MockData {
       skills: const ['Social Media', 'Meta Ads', 'Analytics', 'Copywriting'],
       location: 'Singapore',
       memberSince: 'Member since 2020',
+      completedJobs: 189,
     ),
     Freelancer(
       id: 'f_priya',
@@ -153,9 +170,15 @@ abstract final class MockData {
       bio:
           'SEO consultant who has taken 40+ sites to the first page of Google. '
           'Technical audits, keyword strategy and link building.',
-      skills: const ['SEO', 'Content Strategy', 'Keyword Research', 'Link Building'],
+      skills: const [
+        'SEO',
+        'Content Strategy',
+        'Keyword Research',
+        'Link Building',
+      ],
       location: 'Islamabad, Pakistan',
       memberSince: 'Member since 2021',
+      completedJobs: 156,
     ),
     Freelancer(
       id: 'f_emily',
@@ -170,6 +193,7 @@ abstract final class MockData {
       skills: const ['Blog Writing', 'SEO Copy', 'Research', 'Editing'],
       location: 'London, UK',
       memberSince: 'Member since 2021',
+      completedJobs: 223,
     ),
     Freelancer(
       id: 'f_omar',
@@ -184,6 +208,7 @@ abstract final class MockData {
       skills: const ['Shopify', 'WooCommerce', 'Payment Gateways', 'APIs'],
       location: 'Cairo, Egypt',
       memberSince: 'Member since 2022',
+      completedJobs: 112,
     ),
     Freelancer(
       id: 'f_nina',
@@ -195,9 +220,15 @@ abstract final class MockData {
       bio:
           'Motion designer creating scroll-stopping visuals for social and ads. '
           'Explainer videos, product demos and branded animations.',
-      skills: const ['Motion Graphics', 'After Effects', 'Video Editing', 'Illustration'],
+      skills: const [
+        'Motion Graphics',
+        'After Effects',
+        'Video Editing',
+        'Illustration',
+      ],
       location: 'Istanbul, Turkey',
       memberSince: 'Member since 2020',
+      completedJobs: 201,
     ),
   ];
 
@@ -263,7 +294,7 @@ abstract final class MockData {
       freelancer: freelancers[4],
       price: 150,
       deliveryDays: 7,
-      skills: const ['Logo Design', 'Brand Kit', 'Guidelines'],
+      skills: const ['Logo Design', 'Brand Kit', 'Illustrator', 'Guidelines'],
       featured: true,
     ),
     Service(
@@ -321,11 +352,11 @@ abstract final class MockData {
       description:
           'Scroll-stopping motion graphics, product demos and polished video edits '
           'with captions optimized for every social platform.',
-      category: categories[3],
+      category: categories[6],
       freelancer: freelancers[9],
       price: 320,
       deliveryDays: 14,
-      skills: const ['After Effects', 'Premiere', 'Captions'],
+      skills: const ['After Effects', 'Premiere', 'Motion Graphics'],
     ),
     Service(
       id: 's_email_marketing',
@@ -350,6 +381,55 @@ abstract final class MockData {
       price: 120,
       deliveryDays: 8,
       skills: const ['API Guides', 'Product Docs', 'Tutorials'],
+    ),
+    Service(
+      id: 's_youtube_editing',
+      title: 'YouTube Video Editing & Post-Production',
+      description:
+          'Professional YouTube video editing with color grading, sound design, '
+          'transitions, thumbnails and platform-optimized exports.',
+      category: categories[6],
+      freelancer: freelancers[9],
+      price: 200,
+      deliveryDays: 7,
+      skills: const ['Premiere Pro', 'DaVinci Resolve', 'Color Grading'],
+      featured: true,
+    ),
+    Service(
+      id: 's_graphic_design',
+      title: 'Custom Graphic Design & Illustrations',
+      description:
+          'Eye-catching graphics for social media, presentations, ads and print. '
+          'Custom illustrations and infographics included.',
+      category: categories[3],
+      freelancer: freelancers[4],
+      price: 110,
+      deliveryDays: 5,
+      skills: const ['Illustrator', 'Photoshop', 'Infographics'],
+    ),
+    Service(
+      id: 's_android_app',
+      title: 'Android App Development (Kotlin)',
+      description:
+          'Native Android apps built with Kotlin, Jetpack Compose and modern '
+          'architecture patterns for reliable, fast performance.',
+      category: categories[1],
+      freelancer: freelancers[0],
+      price: 380,
+      deliveryDays: 18,
+      skills: const ['Kotlin', 'Jetpack Compose', 'Firebase', 'Material 3'],
+    ),
+    Service(
+      id: 's_social_media_design',
+      title: 'Social Media Content Design',
+      description:
+          'Scroll-stopping social media graphics, story templates and branded '
+          'content packs for Instagram, TikTok and LinkedIn.',
+      category: categories[3],
+      freelancer: freelancers[4],
+      price: 95,
+      deliveryDays: 4,
+      skills: const ['Canva', 'Figma', 'Social Media', 'Templates'],
     ),
   ];
 }

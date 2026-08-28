@@ -73,9 +73,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         name: nameController.text.trim(),
         email: emailController.text.trim(),
       );
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Profile updated')));
     }
   }
 
@@ -100,17 +100,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (confirmed == true && mounted) {
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        AppRoutes.welcome,
-        (route) => false,
-      );
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(AppRoutes.welcome, (route) => false);
     }
   }
 
   void _showPrototypeMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -132,15 +131,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: AppConstants.spaceMd),
-          Center(
-            child: Text(user.name, style: theme.textTheme.titleLarge),
-          ),
+          Center(child: Text(user.name, style: theme.textTheme.titleLarge)),
           const SizedBox(height: AppConstants.spaceXs),
           Center(
             child: Text(
               user.email,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: AppColors.textSecondary),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
           ),
           const SizedBox(height: AppConstants.spaceXs),
@@ -154,20 +152,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: AppColors.textMuted,
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  user.location,
-                  style: theme.textTheme.bodySmall,
-                ),
+                Text(user.location, style: theme.textTheme.bodySmall),
               ],
             ),
           ),
           const SizedBox(height: AppConstants.spaceSm),
           Center(
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 6,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 color: AppColors.primaryContainer,
                 borderRadius: BorderRadius.circular(999),
@@ -227,7 +219,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () => _showPrototypeMessage(
                     '${AppConstants.appName} v1.0.0 — '
-                    'Week 1 UI foundation.',
+                    'Marketplace browsing & freelancer profiles.',
                   ),
                 ),
               ],

@@ -1,5 +1,6 @@
 import 'category.dart';
 import 'freelancer.dart';
+
 /// A service listing on the WORKLANCE marketplace.
 /// A service belongs to one [Category] and is offered by one [Freelancer].
 /// Rating and review count come from the freelancer, so the same freelancer

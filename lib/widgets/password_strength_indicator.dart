@@ -13,17 +13,11 @@ class PasswordStrengthIndicator extends StatelessWidget {
   final String password;
 
   List<({String label, bool met})> get _requirements => [
-        (label: 'At least 8 characters', met: password.length >= 8),
-        (
-          label: 'One uppercase letter',
-          met: RegExp(r'[A-Z]').hasMatch(password),
-        ),
-        (
-          label: 'One lowercase letter',
-          met: RegExp(r'[a-z]').hasMatch(password),
-        ),
-        (label: 'One number', met: RegExp(r'[0-9]').hasMatch(password)),
-      ];
+    (label: 'At least 8 characters', met: password.length >= 8),
+    (label: 'One uppercase letter', met: RegExp(r'[A-Z]').hasMatch(password)),
+    (label: 'One lowercase letter', met: RegExp(r'[a-z]').hasMatch(password)),
+    (label: 'One number', met: RegExp(r'[0-9]').hasMatch(password)),
+  ];
 
   @override
   Widget build(BuildContext context) {

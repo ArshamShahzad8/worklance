@@ -111,8 +111,9 @@ class CategoryCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   '$serviceCount services',
-                  style: theme.textTheme.labelSmall
-                      ?.copyWith(color: AppColors.textMuted),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: AppColors.textMuted,
+                  ),
                 ),
               ],
             ],

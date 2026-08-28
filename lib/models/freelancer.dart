@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 /// A freelancer offering services on WORKLANCE.
 class Freelancer {
   const Freelancer({
@@ -12,6 +13,7 @@ class Freelancer {
     required this.skills,
     this.location = 'Remote',
     this.memberSince = 'Member since 2024',
+    this.completedJobs = 0,
   });
   final String id;
   final String name;
@@ -25,6 +27,8 @@ class Freelancer {
   /// Static mock location shown on the service cards (no GPS, mock only).
   final String location;
   final String memberSince;
+  final int completedJobs;
+
   /// Initials derived from the name, e.g. "Rohan Mehta" -> "RM".
   /// Used to render the avatar without needing image assets.
   String get initials {

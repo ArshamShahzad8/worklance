@@ -2,12 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:worklance/data/mock_data.dart';
 
 void main() {
-  test('has at least 6 categories', () {
-    expect(MockData.categories.length, greaterThanOrEqualTo(6));
+  test('has at least 7 categories', () {
+    expect(MockData.categories.length, greaterThanOrEqualTo(7));
   });
 
-  test('has at least 8 services and multiple freelancers', () {
-    expect(MockData.services.length, greaterThanOrEqualTo(8));
+  test('has at least 15 services and multiple freelancers', () {
+    expect(MockData.services.length, greaterThanOrEqualTo(15));
     expect(MockData.freelancers.length, greaterThanOrEqualTo(5));
   });
 
@@ -25,10 +25,16 @@ void main() {
     final categoryIds = MockData.categories.map((c) => c.id).toSet();
     final freelancerIds = MockData.freelancers.map((f) => f.id).toSet();
     for (final service in MockData.services) {
-      expect(categoryIds, contains(service.category.id),
-          reason: 'Service ${service.id} has unknown category');
-      expect(freelancerIds, contains(service.freelancer.id),
-          reason: 'Service ${service.id} has unknown freelancer');
+      expect(
+        categoryIds,
+        contains(service.category.id),
+        reason: 'Service ${service.id} has unknown category',
+      );
+      expect(
+        freelancerIds,
+        contains(service.freelancer.id),
+        reason: 'Service ${service.id} has unknown freelancer',
+      );
     }
   });
 
@@ -41,7 +47,7 @@ void main() {
     }
   });
 
-  test('all six required categories are present', () {
+  test('all seven required categories are present', () {
     final names = MockData.categories.map((c) => c.name).toSet();
     for (final required in [
       'Web Development',
@@ -50,6 +56,7 @@ void main() {
       'Graphic Design',
       'Digital Marketing',
       'Content Writing',
+      'Video Editing',
     ]) {
       expect(names, contains(required));
     }
@@ -61,15 +68,19 @@ void main() {
   });
 
   test('has a featured selection for the Home discovery feed', () {
-    final featured =
-        MockData.services.where((service) => service.featured).toList();
+    final featured = MockData.services
+        .where((service) => service.featured)
+        .toList();
     expect(featured.length, greaterThanOrEqualTo(3));
   });
 
   test('freelancers have mock locations for the cards', () {
     for (final freelancer in MockData.freelancers) {
-      expect(freelancer.location.trim(), isNotEmpty,
-          reason: '${freelancer.name} is missing a location');
+      expect(
+        freelancer.location.trim(),
+        isNotEmpty,
+        reason: '${freelancer.name} is missing a location',
+      );
     }
   });
 }

@@ -57,12 +57,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     setState(() => _isLoading = false);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Account created. Welcome to ${AppConstants.appName}!')),
+      SnackBar(
+        content: Text('Account created. Welcome to ${AppConstants.appName}!'),
+      ),
     );
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      AppRoutes.marketplace,
-      (route) => false,
-    );
+    Navigator.of(
+      context,
+    ).pushNamedAndRemoveUntil(AppRoutes.marketplace, (route) => false);
   }
 
   @override
@@ -230,8 +231,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 ),
                               ),
                               TextButton(
-                                onPressed: () => Navigator.of(context)
-                                    .pushReplacementNamed(AppRoutes.login),
+                                onPressed: () => Navigator.of(
+                                  context,
+                                ).pushReplacementNamed(AppRoutes.login),
                                 child: const Text('Login'),
                               ),
                             ],

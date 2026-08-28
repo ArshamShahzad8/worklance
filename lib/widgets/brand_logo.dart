@@ -23,7 +23,10 @@ class BrandLogo extends StatelessWidget {
             : AppColors.primaryContainer,
         borderRadius: BorderRadius.circular(size * 0.3),
         border: light
-            ? Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1.5)
+            ? Border.all(
+                color: Colors.white.withValues(alpha: 0.35),
+                width: 1.5,
+              )
             : null,
       ),
       child: Icon(

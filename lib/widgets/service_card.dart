@@ -17,11 +17,13 @@ class ServiceCard extends StatelessWidget {
     required this.service,
     required this.onTap,
     this.favorites,
+    this.onFreelancerTap,
   });
 
   final Service service;
   final VoidCallback onTap;
   final FavoritesController? favorites;
+  final VoidCallback? onFreelancerTap;
 
   @override
   Widget build(BuildContext context) {
@@ -40,21 +42,27 @@ class ServiceCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  FreelancerAvatar(
-                    name: freelancer.name,
-                    color: freelancer.avatarColor,
-                    radius: 20,
+                  GestureDetector(
+                    onTap: onFreelancerTap,
+                    child: FreelancerAvatar(
+                      name: freelancer.name,
+                      color: freelancer.avatarColor,
+                      radius: 20,
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          freelancer.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleSmall,
+                        GestureDetector(
+                          onTap: onFreelancerTap,
+                          child: Text(
+                            freelancer.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleSmall,
+                          ),
                         ),
                         const SizedBox(height: 2),
                         Text(
@@ -78,16 +86,18 @@ class ServiceCard extends StatelessWidget {
                 service.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w700),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 6),
               Text(
                 service.description,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: AppColors.textSecondary),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 10),
               Row(
@@ -134,8 +144,9 @@ class ServiceCard extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: AppColors.primaryContainer,
-                        borderRadius:
-                            BorderRadius.circular(AppConstants.radiusSm),
+                        borderRadius: BorderRadius.circular(
+                          AppConstants.radiusSm,
+                        ),
                       ),
                       child: Text(
                         service.category.name,
@@ -169,6 +180,35 @@ class ServiceCard extends StatelessWidget {
                   ),
                 ],
               ),
+              // --- Skills tags ---
+              if (service.skills.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  children: [
+                    for (final skill in service.skills.take(4))
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceVariant,
+                          borderRadius: BorderRadius.circular(
+                            AppConstants.radiusSm,
+                          ),
+                        ),
+                        child: Text(
+                          skill,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
             ],
           ),
         ),
@@ -177,29 +217,63 @@ class ServiceCard extends StatelessWidget {
   }
 }
 
-class _FavoriteButton extends StatelessWidget {
-  const _FavoriteButton({
-    required this.favorites,
-    required this.serviceId,
-  });
+class _FavoriteButton extends StatefulWidget {
+  const _FavoriteButton({required this.favorites, required this.serviceId});
 
   final FavoritesController favorites;
   final String serviceId;
 
   @override
+  State<_FavoriteButton> createState() => _FavoriteButtonState();
+}
+
+class _FavoriteButtonState extends State<_FavoriteButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.3), weight: 40),
+      TweenSequenceItem(tween: Tween(begin: 1.3, end: 0.9), weight: 30),
+      TweenSequenceItem(tween: Tween(begin: 0.9, end: 1.0), weight: 30),
+    ]).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _toggle() {
+    widget.favorites.toggle(widget.serviceId);
+    _controller.forward(from: 0.0);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: favorites,
+      listenable: widget.favorites,
       builder: (context, _) {
-        final isFavorite = favorites.isFavorite(serviceId);
-        return IconButton(
-          onPressed: () => favorites.toggle(serviceId),
-          tooltip: isFavorite ? 'Remove from favorites' : 'Add to favorites',
-          icon: Icon(
-            isFavorite
-                ? Icons.favorite_rounded
-                : Icons.favorite_border_rounded,
-            color: isFavorite ? AppColors.error : AppColors.textMuted,
+        final isFavorite = widget.favorites.isFavorite(widget.serviceId);
+        return ScaleTransition(
+          scale: _scaleAnimation,
+          child: IconButton(
+            onPressed: _toggle,
+            tooltip: isFavorite ? 'Remove from favorites' : 'Add to favorites',
+            icon: Icon(
+              isFavorite
+                  ? Icons.favorite_rounded
+                  : Icons.favorite_border_rounded,
+              color: isFavorite ? AppColors.error : AppColors.textMuted,
+            ),
           ),
         );
       },
