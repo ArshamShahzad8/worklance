@@ -4,13 +4,11 @@ import '../../app/routes.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/state/app_store.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/utils/validators.dart';
 import '../../widgets/app_button.dart';
-import '../../widgets/app_text_field.dart';
 import '../../widgets/freelancer_avatar.dart';
 
-/// Profile tab: avatar, name, email, edit profile, settings placeholders
-/// and logout (returns to the Welcome screen).
+/// Profile tab: avatar, name, email, edit profile, freelancer tools,
+/// settings placeholders and logout (returns to the Welcome screen).
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -21,62 +19,16 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _notificationsEnabled = true;
 
-  Future<void> _editProfile() async {
-    final store = AppScope.of(context);
-    final nameController = TextEditingController(text: store.user.user.name);
-    final emailController = TextEditingController(text: store.user.user.email);
-    final formKey = GlobalKey<FormState>();
+  void _editProfile() {
+    Navigator.of(context).pushNamed(AppRoutes.editProfile);
+  }
 
-    final saved = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Edit Profile'),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AppTextField(
-                controller: nameController,
-                label: 'Full name',
-                validator: validateName,
-              ),
-              const SizedBox(height: AppConstants.spaceMd),
-              AppTextField(
-                controller: emailController,
-                label: 'Email address',
-                keyboardType: TextInputType.emailAddress,
-                validator: validateEmail,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (formKey.currentState!.validate()) {
-                Navigator.of(dialogContext).pop(true);
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
+  void _openFreelancerProfile() {
+    Navigator.of(context).pushNamed(AppRoutes.myFreelancerProfile);
+  }
 
-    if (saved == true && mounted) {
-      store.user.update(
-        name: nameController.text.trim(),
-        email: emailController.text.trim(),
-      );
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Profile updated')));
-    }
+  void _openMyServices() {
+    Navigator.of(context).pushNamed(AppRoutes.myServices);
   }
 
   Future<void> _confirmLogout() async {
@@ -126,7 +78,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Center(
             child: FreelancerAvatar(
               name: user.name,
-              color: AppColors.primary,
+              color: user.avatarColor,
               radius: 44,
             ),
           ),
@@ -179,6 +131,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
             variant: AppButtonVariant.outline,
             icon: Icons.edit_outlined,
             onPressed: _editProfile,
+          ),
+          const SizedBox(height: AppConstants.spaceLg),
+          Text('Freelancing', style: theme.textTheme.titleMedium),
+          const SizedBox(height: AppConstants.spaceSm),
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.badge_outlined),
+                  title: const Text('My Freelancer Profile'),
+                  subtitle: Text(
+                    user.isFreelancer
+                        ? 'View and manage your public profile'
+                        : 'Set up your profile to start selling services',
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: _openFreelancerProfile,
+                ),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.storefront_outlined),
+                  title: const Text('My Services'),
+                  subtitle: const Text('Create and manage your listings'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: _openMyServices,
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: AppConstants.spaceLg),
           Text('Settings', style: theme.textTheme.titleMedium),

@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
 
+import '../../models/freelancer.dart';
+import '../../models/service.dart';
 import '../../models/user.dart';
 
 /// In-memory favorite state for service cards.
@@ -18,8 +20,9 @@ class FavoritesController extends ChangeNotifier {
   }
 }
 
-/// Holds the current user profile so the greeting, profile screen and any
-/// future screen all read from one central place.
+/// Holds the current user profile so the greeting, profile screen, the
+/// freelancer profile screen and any future screen all read from one
+/// central place.
 class UserController extends ChangeNotifier {
   UserController(this._user);
 
@@ -27,12 +30,35 @@ class UserController extends ChangeNotifier {
 
   UserProfile get user => _user;
 
-  void update({String? name, String? email}) {
-    _user = UserProfile(
-      name: name ?? _user.name,
-      email: email ?? _user.email,
-      title: _user.title,
-      location: _user.location,
+  /// The id used for services this user creates as a freelancer, and for
+  /// matching the user's own listings in [ServicesController].
+  static const String selfFreelancerId = 'me';
+
+  /// Represents the current user as a [Freelancer], so the existing
+  /// Freelancer Profile screen (built in Week 1 for browsing other
+  /// freelancers) can be reused unmodified for the user's own profile.
+  Freelancer get asFreelancer => Freelancer(
+    id: selfFreelancerId,
+    name: _user.name,
+    title: _user.title,
+    avatarColor: _user.avatarColor,
+    rating: _user.rating,
+    reviewCount: _user.reviewCount,
+    bio: _user.bio,
+    skills: _user.skills,
+    location: _user.location,
+    memberSince: _user.memberSince,
+    completedJobs: _user.completedJobs,
+  );
+
+  /// Generic profile update. Used by Registration and the Edit Profile
+  /// screen. Any argument left null keeps the current value.
+  void update({String? name, String? email, String? title, String? location}) {
+    _user = _user.copyWith(
+      name: name,
+      email: email,
+      title: title,
+      location: location,
     );
     notifyListeners();
   }
@@ -46,12 +72,20 @@ class UserController extends ChangeNotifier {
   void loginAs(String email) {
     final normalized = email.trim();
     final sameUser = _user.email.toLowerCase() == normalized.toLowerCase();
-    _user = UserProfile(
+    _user = _user.copyWith(
       name: sameUser ? _user.name : _displayNameFromEmail(normalized),
       email: normalized,
-      title: _user.title,
-      location: _user.location,
     );
+    notifyListeners();
+  }
+
+  /// Saves the freelancer-facing fields (bio + skills), marking the user as
+  /// a freelancer so the My Services / Create Service screens unlock.
+  void updateFreelancerProfile({
+    required String bio,
+    required List<String> skills,
+  }) {
+    _user = _user.copyWith(bio: bio, skills: skills, isFreelancer: true);
     notifyListeners();
   }
 
@@ -67,18 +101,62 @@ class UserController extends ChangeNotifier {
   }
 }
 
+/// Holds the services the current user offers as a freelancer.
+///
+/// Lives only for the current app session (no database yet — this is the
+/// Week 3 UI foundation for My Services / Create Service; a real API-backed
+/// repository can replace this controller later without touching the UI).
+class ServicesController extends ChangeNotifier {
+  ServicesController([List<Service> initial = const []])
+    : _services = List<Service>.from(initial);
+
+  final List<Service> _services;
+
+  List<Service> getAll() => List.unmodifiable(_services);
+
+  Service? getById(String id) {
+    for (final service in _services) {
+      if (service.id == id) return service;
+    }
+    return null;
+  }
+
+  void add(Service service) {
+    _services.insert(0, service);
+    notifyListeners();
+  }
+
+  void update(Service service) {
+    final index = _services.indexWhere((s) => s.id == service.id);
+    if (index == -1) return;
+    _services[index] = service;
+    notifyListeners();
+  }
+
+  void remove(String id) {
+    _services.removeWhere((s) => s.id == id);
+    notifyListeners();
+  }
+}
+
 /// Combines the app's runtime state into one object so the UI has a single
 /// place to read and update state.
 class AppStore extends ChangeNotifier {
-  AppStore({required this.favorites, required this.user}) {
+  AppStore({
+    required this.favorites,
+    required this.user,
+    ServicesController? services,
+  }) : services = services ?? ServicesController() {
     // Forward child notifications so widgets listening to the store itself
-    // also rebuild when favorites or the user profile change.
+    // also rebuild when favorites, the user profile, or services change.
     favorites.addListener(notifyListeners);
     user.addListener(notifyListeners);
+    this.services.addListener(notifyListeners);
   }
 
   final FavoritesController favorites;
   final UserController user;
+  final ServicesController services;
 }
 
 /// Exposes the [AppStore] to the widget tree.

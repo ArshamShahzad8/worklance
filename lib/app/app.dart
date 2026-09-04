@@ -31,6 +31,36 @@ class WorklanceApp extends StatelessWidget {
         theme: buildAppTheme(),
         initialRoute: AppRoutes.splash,
         onGenerateRoute: AppRoutes.onGenerateRoute,
+        onUnknownRoute: (settings) => MaterialPageRoute(
+          builder: (context) => Scaffold(
+            appBar: AppBar(title: const Text('Page not found')),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.error_outline_rounded, size: 48),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No screen is registered for "${settings.name}".\n'
+                      'If you just pulled new code, run a full "flutter '
+                      'clean" + fresh "flutter run" (not just hot reload).',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    FilledButton(
+                      onPressed: () => Navigator.of(
+                        context,
+                      ).pushReplacementNamed(AppRoutes.marketplace),
+                      child: const Text('Go to Marketplace'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

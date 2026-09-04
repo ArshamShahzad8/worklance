@@ -14,22 +14,69 @@ import '../../widgets/service_card.dart';
 
 /// Freelancer Profile screen: shows detailed information about a freelancer
 /// including their bio, skills, stats and list of services.
+///
+/// Reused for two cases:
+///  * Browsing another freelancer (the Week 1/2 behaviour): services come
+///    from [ServiceRepository].
+///  * [isOwnProfile]: the logged-in user viewing/managing their own
+///    freelancer profile (Week 3). Services come from the live
+///    [ServicesController] and an Edit Profile / Manage Services action is
+///    shown.
 class FreelancerProfileScreen extends StatelessWidget {
-  const FreelancerProfileScreen({super.key, required this.freelancer});
+  const FreelancerProfileScreen({
+    super.key,
+    required this.freelancer,
+    this.isOwnProfile = false,
+    this.onEditProfile,
+    this.onManageServices,
+  });
 
   final Freelancer freelancer;
-
-  /// All services offered by this freelancer.
-  List<Service> get _freelancerServices =>
-      ServiceRepository.getByFreelancer(freelancer.id);
+  final bool isOwnProfile;
+  final VoidCallback? onEditProfile;
+  final VoidCallback? onManageServices;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final store = AppScope.of(context);
 
+    if (isOwnProfile) {
+      // Own profile: services come live from the ServicesController so
+      // additions/edits/deletes in My Services show up immediately here.
+      return ListenableBuilder(
+        listenable: store.services,
+        builder: (context, _) =>
+            _buildScaffold(context, theme, store, store.services.getAll()),
+      );
+    }
+
+    return _buildScaffold(
+      context,
+      theme,
+      store,
+      ServiceRepository.getByFreelancer(freelancer.id),
+    );
+  }
+
+  Widget _buildScaffold(
+    BuildContext context,
+    ThemeData theme,
+    AppStore store,
+    List<Service> freelancerServices,
+  ) {
     return Scaffold(
-      appBar: AppBar(title: Text(freelancer.name)),
+      appBar: AppBar(
+        title: Text(isOwnProfile ? 'My Freelancer Profile' : freelancer.name),
+        actions: [
+          if (isOwnProfile && onEditProfile != null)
+            IconButton(
+              tooltip: 'Edit freelancer profile',
+              onPressed: onEditProfile,
+              icon: const Icon(Icons.edit_outlined),
+            ),
+        ],
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,11 +215,13 @@ class FreelancerProfileScreen extends StatelessWidget {
               child: SectionHeader(
                 title: 'Services',
                 subtitle:
-                    '${_freelancerServices.length} service${_freelancerServices.length == 1 ? '' : 's'} available',
+                    '${freelancerServices.length} service${freelancerServices.length == 1 ? '' : 's'} available',
+                actionLabel: isOwnProfile ? 'Manage' : null,
+                onAction: isOwnProfile ? onManageServices : null,
               ),
             ),
             const SizedBox(height: AppConstants.spaceSm),
-            for (final service in _freelancerServices)
+            for (final service in freelancerServices)
               Padding(
                 padding: const EdgeInsets.fromLTRB(
                   AppConstants.spaceMd,
@@ -189,15 +238,30 @@ class FreelancerProfileScreen extends StatelessWidget {
                 ),
               ),
 
-            if (_freelancerServices.isEmpty)
+            if (freelancerServices.isEmpty)
               Padding(
                 padding: const EdgeInsets.all(AppConstants.spaceLg),
                 child: Center(
-                  child: Text(
-                    'No services listed yet.',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                  child: Column(
+                    children: [
+                      Text(
+                        isOwnProfile
+                            ? "You haven't listed any services yet."
+                            : 'No services listed yet.',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      if (isOwnProfile && onManageServices != null) ...[
+                        const SizedBox(height: AppConstants.spaceSm),
+                        TextButton.icon(
+                          onPressed: onManageServices,
+                          icon: const Icon(Icons.add_rounded),
+                          label: const Text('Create your first service'),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ),

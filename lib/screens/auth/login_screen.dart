@@ -162,10 +162,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     tapTargetSize:
                                         MaterialTapTargetSize.shrinkWrap,
                                   ),
-                                  onPressed: () => _showPrototypeMessage(
-                                    'Password reset is a prototype '
-                                    'placeholder.',
-                                  ),
+                                  onPressed: () => Navigator.of(
+                                    context,
+                                  ).pushNamed(AppRoutes.forgotPassword),
                                   child: const Text(
                                     'Forgot password?',
                                     maxLines: 1,
