@@ -310,8 +310,13 @@ void main() {
       // Verify search bar exists.
       expect(find.byKey(const ValueKey('home_search')), findsOneWidget);
 
-      // Tap the search bar to focus the underlying TextField.
+      // The Jobs promo card now pushes the search bar below the fold.
+      // Scroll it into view before tapping.
       final searchBar = find.byKey(const ValueKey('home_search'));
+      await tester.ensureVisible(searchBar);
+      await tester.pumpAndSettle();
+
+      // Tap the search bar to focus the underlying TextField.
       await tester.tap(searchBar);
       await tester.pumpAndSettle();
 

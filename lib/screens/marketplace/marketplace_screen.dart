@@ -32,6 +32,8 @@ class MarketplaceScreen extends StatefulWidget {
     required this.onCategorySelected,
     required this.onProfileTap,
     required this.onFreelancerTap,
+    required this.onFindJobs,
+    required this.onPostJob,
   });
 
   final VoidCallback onSeeAllCategories;
@@ -39,6 +41,8 @@ class MarketplaceScreen extends StatefulWidget {
   final ValueChanged<Category> onCategorySelected;
   final VoidCallback onProfileTap;
   final ValueChanged<Freelancer> onFreelancerTap;
+  final VoidCallback onFindJobs;
+  final VoidCallback onPostJob;
 
   @override
   State<MarketplaceScreen> createState() => _MarketplaceScreenState();
@@ -116,6 +120,22 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                   icon: Icons.category_outlined,
                 ),
               ],
+            ),
+          ),
+        ),
+
+        // ─── Jobs marketplace promo ────────────────────────────────────
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(
+            AppConstants.spaceMd,
+            AppConstants.spaceLg,
+            AppConstants.spaceMd,
+            0,
+          ),
+          sliver: SliverToBoxAdapter(
+            child: _JobsPromoCard(
+              onFindJobs: widget.onFindJobs,
+              onPostJob: widget.onPostJob,
             ),
           ),
         ),
@@ -488,6 +508,82 @@ class _HeaderIconButton extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// Promo card bridging the service marketplace and the job marketplace:
+/// "Find Jobs" for freelancers, "Post a Job" for clients.
+class _JobsPromoCard extends StatelessWidget {
+  const _JobsPromoCard({required this.onFindJobs, required this.onPostJob});
+
+  final VoidCallback onFindJobs;
+  final VoidCallback onPostJob;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(AppConstants.spaceMd),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.accent, Color(0xFFEA8C00)],
+        ),
+        borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Looking for work or hiring?',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Browse open jobs or post one in minutes.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.9),
+                  ),
+                ),
+                const SizedBox(height: AppConstants.spaceSm),
+                Row(
+                  children: [
+                    Expanded(
+                      child: FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: AppColors.onAccent,
+                        ),
+                        onPressed: onFindJobs,
+                        child: const Text('Find Jobs'),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.white),
+                        ),
+                        onPressed: onPostJob,
+                        child: const Text('Post a Job'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

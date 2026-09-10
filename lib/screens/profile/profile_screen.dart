@@ -31,6 +31,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Navigator.of(context).pushNamed(AppRoutes.myServices);
   }
 
+  void _openMyProposals() {
+    Navigator.of(context).pushNamed(AppRoutes.myProposals);
+  }
+
+  void _openPostJob() {
+    Navigator.of(context).pushNamed(AppRoutes.postJob);
+  }
+
+  void _openFindJobs() {
+    Navigator.of(context).pushNamed(AppRoutes.findJobs);
+  }
+
   Future<void> _confirmLogout() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -156,6 +168,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   subtitle: const Text('Create and manage your listings'),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: _openMyServices,
+                ),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.description_outlined),
+                  title: const Text('My Proposals'),
+                  subtitle: const Text('Track jobs you have applied to'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: _openMyProposals,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppConstants.spaceLg),
+          Text('Client Tools', style: theme.textTheme.titleMedium),
+          const SizedBox(height: AppConstants.spaceSm),
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.add_business_outlined),
+                  title: const Text('Post a Job'),
+                  subtitle: const Text('Hire a freelancer for your project'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: _openPostJob,
+                ),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.business_center_outlined),
+                  title: const Text('Find Jobs'),
+                  subtitle: const Text('Browse the job marketplace'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: _openFindJobs,
                 ),
               ],
             ),

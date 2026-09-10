@@ -1,8 +1,11 @@
 import 'package:flutter/widgets.dart';
 
 import '../../models/freelancer.dart';
+import '../../models/job.dart';
+import '../../models/proposal.dart';
 import '../../models/service.dart';
 import '../../models/user.dart';
+import '../../data/repositories/job_repository.dart';
 
 /// In-memory favorite state for service cards.
 ///
@@ -34,6 +37,25 @@ class UserController extends ChangeNotifier {
   /// matching the user's own listings in [ServicesController].
   static const String selfFreelancerId = 'me';
 
+  /// The id used for jobs this user posts as a client.
+  static const String selfClientId = 'me_client';
+
+  /// Represents the current user as a [JobClient], so posting a job (Post a
+  /// Job, Week 4) attaches the current user's identity the same way
+  /// [asFreelancer] does for services.
+  JobClient get asClient => JobClient(
+    id: selfClientId,
+    name: _user.name,
+    avatarColor: _user.avatarColor,
+    rating: _user.rating,
+    reviewCount: _user.reviewCount,
+    location: _user.location,
+    jobsPosted: _user.jobsPosted,
+    totalSpent: _user.totalSpent,
+    paymentVerified: _user.paymentVerified,
+    memberSince: _user.memberSince,
+  );
+
   /// Represents the current user as a [Freelancer], so the existing
   /// Freelancer Profile screen (built in Week 1 for browsing other
   /// freelancers) can be reused unmodified for the user's own profile.
@@ -53,7 +75,12 @@ class UserController extends ChangeNotifier {
 
   /// Generic profile update. Used by Registration and the Edit Profile
   /// screen. Any argument left null keeps the current value.
-  void update({String? name, String? email, String? title, String? location}) {
+  void update({
+    String? name,
+    String? email,
+    String? title,
+    String? location,
+  }) {
     _user = _user.copyWith(
       name: name,
       email: email,
@@ -81,11 +108,15 @@ class UserController extends ChangeNotifier {
 
   /// Saves the freelancer-facing fields (bio + skills), marking the user as
   /// a freelancer so the My Services / Create Service screens unlock.
-  void updateFreelancerProfile({
-    required String bio,
-    required List<String> skills,
-  }) {
+  void updateFreelancerProfile({required String bio, required List<String> skills}) {
     _user = _user.copyWith(bio: bio, skills: skills, isFreelancer: true);
+    notifyListeners();
+  }
+
+  /// Updates the client-facing stats after this user posts a job (Post a
+  /// Job, Week 4), so their own client profile reflects real activity.
+  void recordJobPosted() {
+    _user = _user.copyWith(jobsPosted: _user.jobsPosted + 1);
     notifyListeners();
   }
 
@@ -139,6 +170,104 @@ class ServicesController extends ChangeNotifier {
   }
 }
 
+/// Holds every job in the marketplace: the seeded catalogue plus any jobs
+/// the current user posts as a client during this session.
+///
+/// Lives only for the current app session (no database yet — this is the
+/// Week 4 UI foundation for Find Jobs / Post a Job; a real API-backed
+/// repository can replace this controller later without touching the UI).
+class JobsController extends ChangeNotifier {
+  JobsController([List<Job>? initial])
+    : _jobs = List<Job>.from(initial ?? JobRepository.getAll());
+
+  final List<Job> _jobs;
+
+  List<Job> getAll() => List.unmodifiable(_jobs);
+
+  Job? getById(String id) {
+    for (final job in _jobs) {
+      if (job.id == id) return job;
+    }
+    return null;
+  }
+
+  /// Adds a client-posted job to the top of the list.
+  void add(Job job) {
+    _jobs.insert(0, job);
+    notifyListeners();
+  }
+
+  /// Bumps a job's proposal count by one (called when a proposal is
+  /// submitted against it), keeping the count consistent everywhere the
+  /// job is shown without a full refetch.
+  void incrementProposalsCount(String jobId) {
+    final index = _jobs.indexWhere((j) => j.id == jobId);
+    if (index == -1) return;
+    _jobs[index] = _jobs[index].copyWith(
+      proposalsCount: _jobs[index].proposalsCount + 1,
+    );
+    notifyListeners();
+  }
+}
+
+/// Holds the proposals the current user (as a freelancer) has submitted.
+///
+/// Lives only for the current app session — see [JobsController] for the
+/// same note on future API/backend readiness.
+class ProposalsController extends ChangeNotifier {
+  final List<Proposal> _proposals = [];
+
+  List<Proposal> getAll() {
+    final sorted = List<Proposal>.from(_proposals)
+      ..sort((a, b) => b.submittedAt.compareTo(a.submittedAt));
+    return List.unmodifiable(sorted);
+  }
+
+  Proposal? getById(String id) {
+    for (final proposal in _proposals) {
+      if (proposal.id == id) return proposal;
+    }
+    return null;
+  }
+
+  /// Whether the current user has already applied to [jobId] — used for
+  /// duplicate-submission protection on the Job Details / Submit Proposal
+  /// screens.
+  bool hasAppliedToJob(String jobId) =>
+      _proposals.any((p) => p.job.id == jobId);
+
+  Proposal? getByJobId(String jobId) {
+    for (final proposal in _proposals) {
+      if (proposal.job.id == jobId) return proposal;
+    }
+    return null;
+  }
+
+  void add(Proposal proposal) {
+    _proposals.insert(0, proposal);
+    notifyListeners();
+  }
+
+  /// Updates a proposal's status and appends a timeline entry. In this
+  /// demo/local environment, status changes are simulated by the user
+  /// themselves (see the Proposal Status screen's "Demo Controls") rather
+  /// than by a real client.
+  void updateStatus(String proposalId, ProposalStatus newStatus, {String? note}) {
+    final index = _proposals.indexWhere((p) => p.id == proposalId);
+    if (index == -1) return;
+    _proposals[index] = _proposals[index].copyWithStatus(newStatus, note: note);
+    notifyListeners();
+  }
+
+  void withdraw(String proposalId) {
+    updateStatus(
+      proposalId,
+      ProposalStatus.withdrawn,
+      note: 'Withdrawn by you.',
+    );
+  }
+}
+
 /// Combines the app's runtime state into one object so the UI has a single
 /// place to read and update state.
 class AppStore extends ChangeNotifier {
@@ -146,17 +275,26 @@ class AppStore extends ChangeNotifier {
     required this.favorites,
     required this.user,
     ServicesController? services,
-  }) : services = services ?? ServicesController() {
+    JobsController? jobs,
+    ProposalsController? proposals,
+  }) : services = services ?? ServicesController(),
+       jobs = jobs ?? JobsController(),
+       proposals = proposals ?? ProposalsController() {
     // Forward child notifications so widgets listening to the store itself
-    // also rebuild when favorites, the user profile, or services change.
+    // also rebuild when favorites, the user profile, jobs, services, or
+    // proposals change.
     favorites.addListener(notifyListeners);
     user.addListener(notifyListeners);
     this.services.addListener(notifyListeners);
+    this.jobs.addListener(notifyListeners);
+    this.proposals.addListener(notifyListeners);
   }
 
   final FavoritesController favorites;
   final UserController user;
   final ServicesController services;
+  final JobsController jobs;
+  final ProposalsController proposals;
 }
 
 /// Exposes the [AppStore] to the widget tree.

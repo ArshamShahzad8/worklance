@@ -126,3 +126,30 @@ String? validateSkillsList(List<String>? skills) {
   if (list.length > 10) return 'Add up to 10 skills';
   return null;
 }
+
+/// Validates a proposal cover letter: required and long enough to be a real
+/// pitch, capped so the field can't grow unreasonably long.
+String? validateCoverLetter(String? value) {
+  final v = value?.trim() ?? '';
+  if (v.isEmpty) return 'Write a short cover letter for this proposal';
+  if (v.length < 40) return 'Cover letter must be at least 40 characters';
+  if (v.length > 2000) return 'Cover letter must be under 2000 characters';
+  return null;
+}
+
+/// Validates a free-text project/delivery duration field (e.g. Submit
+/// Proposal's "estimated delivery").
+String? validateDurationText(String? value) {
+  final v = value?.trim() ?? '';
+  if (v.isEmpty) return 'Please enter an estimated duration';
+  if (v.length > 60) return 'Keep this under 60 characters';
+  return null;
+}
+
+/// Validates a job/service budget maximum against its minimum: max must be
+/// greater than or equal to min.
+String? validateBudgetRange(double? min, double? max) {
+  if (min == null || max == null) return null;
+  if (max < min) return 'Maximum must be greater than or equal to minimum';
+  return null;
+}

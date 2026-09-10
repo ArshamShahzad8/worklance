@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/freelancer.dart';
+import '../models/job.dart';
+import '../models/proposal.dart';
 import '../models/service.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/auth/login_screen.dart';
@@ -11,6 +13,12 @@ import '../screens/marketplace/service_detail_screen.dart';
 import '../screens/profile/edit_freelancer_profile_screen.dart';
 import '../screens/profile/edit_profile_screen.dart';
 import '../screens/profile/my_freelancer_profile_screen.dart';
+import '../screens/jobs/find_jobs_screen.dart';
+import '../screens/jobs/job_details_screen.dart';
+import '../screens/jobs/my_proposals_screen.dart';
+import '../screens/jobs/post_job_screen.dart';
+import '../screens/jobs/proposal_status_screen.dart';
+import '../screens/jobs/submit_proposal_screen.dart';
 import '../screens/services/create_service_screen.dart';
 import '../screens/services/my_services_screen.dart';
 import '../screens/splash/splash_screen.dart';
@@ -32,6 +40,12 @@ abstract final class AppRoutes {
   static const String editFreelancerProfile = '/edit-freelancer-profile';
   static const String myServices = '/my-services';
   static const String createService = '/create-service';
+  static const String findJobs = '/find-jobs';
+  static const String jobDetails = '/job-details';
+  static const String postJob = '/post-job';
+  static const String submitProposal = '/submit-proposal';
+  static const String myProposals = '/my-proposals';
+  static const String proposalStatus = '/proposal-status';
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -44,7 +58,9 @@ abstract final class AppRoutes {
       case register:
         return MaterialPageRoute(builder: (_) => const RegistrationScreen());
       case forgotPassword:
-        return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
+        return MaterialPageRoute(
+          builder: (_) => const ForgotPasswordScreen(),
+        );
       case marketplace:
         return MaterialPageRoute(builder: (_) => const MarketplaceShell());
       case serviceDetail:
@@ -82,6 +98,25 @@ abstract final class AppRoutes {
         final existingService = settings.arguments as Service?;
         return MaterialPageRoute(
           builder: (_) => CreateServiceScreen(existingService: existingService),
+        );
+      case findJobs:
+        return MaterialPageRoute(builder: (_) => const FindJobsScreen());
+      case jobDetails:
+        final job = settings.arguments as Job;
+        return MaterialPageRoute(builder: (_) => JobDetailsScreen(job: job));
+      case postJob:
+        return MaterialPageRoute(builder: (_) => const PostJobScreen());
+      case submitProposal:
+        final job = settings.arguments as Job;
+        return MaterialPageRoute(
+          builder: (_) => SubmitProposalScreen(job: job),
+        );
+      case myProposals:
+        return MaterialPageRoute(builder: (_) => const MyProposalsScreen());
+      case proposalStatus:
+        final proposal = settings.arguments as Proposal;
+        return MaterialPageRoute(
+          builder: (_) => ProposalStatusScreen(proposal: proposal),
         );
       default:
         return null;

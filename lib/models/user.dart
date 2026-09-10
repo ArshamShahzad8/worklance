@@ -19,6 +19,9 @@ class UserProfile {
     this.reviewCount = 0,
     this.completedJobs = 0,
     this.memberSince = 'Member since 2026',
+    this.jobsPosted = 0,
+    this.totalSpent = 0,
+    this.paymentVerified = false,
   });
 
   final String name;
@@ -43,6 +46,16 @@ class UserProfile {
   final int reviewCount;
   final int completedJobs;
   final String memberSince;
+
+  /// Number of jobs this user has posted as a client (Post a Job feature).
+  final int jobsPosted;
+
+  /// Total amount this user has spent hiring freelancers, as a client.
+  final double totalSpent;
+
+  /// Whether this user's payment method is verified (shown on posted jobs
+  /// so freelancers can gauge how serious a client is).
+  final bool paymentVerified;
 
   /// First word of the name, used for the personalized greeting.
   String get firstName {
@@ -72,6 +85,9 @@ class UserProfile {
     int? reviewCount,
     int? completedJobs,
     String? memberSince,
+    int? jobsPosted,
+    double? totalSpent,
+    bool? paymentVerified,
   }) {
     return UserProfile(
       name: name ?? this.name,
@@ -86,6 +102,9 @@ class UserProfile {
       reviewCount: reviewCount ?? this.reviewCount,
       completedJobs: completedJobs ?? this.completedJobs,
       memberSince: memberSince ?? this.memberSince,
+      jobsPosted: jobsPosted ?? this.jobsPosted,
+      totalSpent: totalSpent ?? this.totalSpent,
+      paymentVerified: paymentVerified ?? this.paymentVerified,
     );
   }
 }

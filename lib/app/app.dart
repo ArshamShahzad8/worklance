@@ -50,9 +50,10 @@ class WorklanceApp extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     FilledButton(
-                      onPressed: () => Navigator.of(
-                        context,
-                      ).pushReplacementNamed(AppRoutes.marketplace),
+                      onPressed: () =>
+                          Navigator.of(context).pushReplacementNamed(
+                            AppRoutes.marketplace,
+                          ),
                       child: const Text('Go to Marketplace'),
                     ),
                   ],
