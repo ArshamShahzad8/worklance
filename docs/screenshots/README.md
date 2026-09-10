@@ -1,4 +1,4 @@
-Drop your screenshots here using these filenames so they show up in the main README automatically:
+Screenshots will be added soon...
 
 - find_jobs.png
 - job_details.png
@@ -7,4 +7,4 @@ Drop your screenshots here using these filenames so they show up in the main REA
 - proposal_status.png
 - post_job.png
 
-You can rename them to whatever you like — just update the matching paths in the root README.md.
+
