@@ -181,6 +181,11 @@ class ProposalStatusScreen extends StatelessWidget {
                     ),
                   ],
 
+                  if (current.status == ProposalStatus.accepted) ...[
+                    const SizedBox(height: AppConstants.spaceLg),
+                    _OrderLaunchCard(proposal: current),
+                  ],
+
                   if (!current.status.isFinal) ...[
                     const SizedBox(height: AppConstants.spaceLg),
                     _DemoControlsCard(proposal: current),
@@ -289,11 +294,20 @@ class _DemoControlsCard extends StatelessWidget {
                 if (proposal.status == ProposalStatus.shortlisted) ...[
                   FilledButton.icon(
                     style: FilledButton.styleFrom(backgroundColor: AppColors.success),
-                    onPressed: () => store.proposals.updateStatus(
-                      proposal.id,
-                      ProposalStatus.accepted,
-                      note: 'Simulated: client accepted (demo only).',
-                    ),
+                    onPressed: () {
+                      store.proposals.updateStatus(
+                        proposal.id,
+                        ProposalStatus.accepted,
+                        note: 'Simulated: client accepted (demo only).',
+                      );
+                      // Accepting a proposal moves the work into an active
+                      // order/contract — the Week 5 continuation of the
+                      // Week 4 proposal flow.
+                      store.orders.createFromProposal(
+                        proposal,
+                        freelancer: store.user.user,
+                      );
+                    },
                     icon: const Icon(Icons.check_rounded, size: 18),
                     label: const Text('Simulate: Accept'),
                   ),
@@ -309,6 +323,62 @@ class _DemoControlsCard extends StatelessWidget {
                   ),
                 ],
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Shown once a proposal is accepted: confirms the order/contract exists
+/// and links straight to Project Details — the Week 5 continuation of this
+/// screen's flow.
+class _OrderLaunchCard extends StatelessWidget {
+  const _OrderLaunchCard({required this.proposal});
+
+  final Proposal proposal;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final store = AppScope.of(context);
+    final order = store.orders.getByProposalId(proposal.id);
+    if (order == null) return const SizedBox.shrink();
+
+    return Card(
+      color: AppColors.success.withValues(alpha: 0.08),
+      child: Padding(
+        padding: const EdgeInsets.all(AppConstants.spaceMd),
+        child: Row(
+          children: [
+            Icon(Icons.handshake_outlined, color: AppColors.success),
+            const SizedBox(width: AppConstants.spaceSm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Order created',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    'This job is now an active contract.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pushNamed(
+                AppRoutes.orderDetails,
+                arguments: order,
+              ),
+              child: const Text('View Order'),
             ),
           ],
         ),

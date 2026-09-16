@@ -2,6 +2,8 @@ import 'package:flutter/widgets.dart';
 
 import '../../models/freelancer.dart';
 import '../../models/job.dart';
+import '../../models/milestone.dart';
+import '../../models/order.dart';
 import '../../models/proposal.dart';
 import '../../models/service.dart';
 import '../../models/user.dart';
@@ -268,6 +270,141 @@ class ProposalsController extends ChangeNotifier {
   }
 }
 
+/// Holds the orders/contracts created once a proposal is accepted.
+///
+/// This is the Week 5 continuation of [ProposalsController]: an order is
+/// created from an accepted proposal and then tracked through its own
+/// lifecycle (Accepted → Active → Submitted → Completed), with a set of
+/// milestones underneath it. Lives only for the current app session, the
+/// same as every other controller here.
+class OrdersController extends ChangeNotifier {
+  final List<Order> _orders = [];
+
+  List<Order> getAll() {
+    final sorted = List<Order>.from(_orders)
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return List.unmodifiable(sorted);
+  }
+
+  /// Orders that are not yet completed — powers the Active Projects view.
+  List<Order> getActive() =>
+      getAll().where((o) => o.status != OrderStatus.completed).toList();
+
+  /// Orders that have been marked completed.
+  List<Order> getCompleted() =>
+      getAll().where((o) => o.status == OrderStatus.completed).toList();
+
+  Order? getById(String id) {
+    for (final order in _orders) {
+      if (order.id == id) return order;
+    }
+    return null;
+  }
+
+  Order? getByProposalId(String proposalId) {
+    for (final order in _orders) {
+      if (order.proposalId == proposalId) return order;
+    }
+    return null;
+  }
+
+  /// Creates a new order/contract from an accepted [Proposal].
+  ///
+  /// Generates a simple, even 3-milestone plan (Kickoff & Planning,
+  /// Core Delivery, Final Review & Handover) that splits the proposed
+  /// amount and spreads due dates across the proposal's estimated
+  /// duration, since there is no separate milestone-planning step in this
+  /// prototype. Returns the existing order instead of duplicating one if
+  /// this proposal already has an order.
+  Order createFromProposal(Proposal proposal, {required UserProfile freelancer}) {
+    final existing = getByProposalId(proposal.id);
+    if (existing != null) return existing;
+
+    final now = DateTime.now();
+    final perMilestone = proposal.proposedAmount / 3;
+    final milestones = [
+      Milestone(
+        id: '${proposal.id}_m1',
+        title: 'Kickoff & Planning',
+        description: 'Confirm requirements and outline the delivery plan.',
+        amount: perMilestone,
+        dueDate: now.add(const Duration(days: 5)),
+      ),
+      Milestone(
+        id: '${proposal.id}_m2',
+        title: 'Core Delivery',
+        description: 'Build and share the main project deliverables.',
+        amount: perMilestone,
+        dueDate: now.add(const Duration(days: 15)),
+      ),
+      Milestone(
+        id: '${proposal.id}_m3',
+        title: 'Final Review & Handover',
+        description: 'Address feedback and hand over the finished work.',
+        amount: proposal.proposedAmount - (perMilestone * 2),
+        dueDate: now.add(const Duration(days: 25)),
+      ),
+    ];
+
+    final order = Order(
+      id: 'order_${proposal.id}',
+      proposalId: proposal.id,
+      job: proposal.job,
+      freelancerName: freelancer.name,
+      freelancerAvatarColor: freelancer.avatarColor,
+      budget: proposal.proposedAmount,
+      deadline: now.add(const Duration(days: 30)),
+      createdAt: now,
+      milestones: milestones,
+    );
+
+    _orders.insert(0, order);
+    notifyListeners();
+    return order;
+  }
+
+  /// Updates an order's overall status and appends a timeline entry.
+  void updateStatus(String orderId, OrderStatus newStatus, {String? note}) {
+    final index = _orders.indexWhere((o) => o.id == orderId);
+    if (index == -1) return;
+    _orders[index] = _orders[index].copyWith(status: newStatus, note: note);
+    notifyListeners();
+  }
+
+  /// Updates a single milestone's status within an order. If every
+  /// milestone becomes completed and the order is still active, the order
+  /// itself is nudged forward so the overall status stays meaningful.
+  void updateMilestoneStatus(
+    String orderId,
+    String milestoneId,
+    MilestoneStatus newStatus,
+  ) {
+    final index = _orders.indexWhere((o) => o.id == orderId);
+    if (index == -1) return;
+    final order = _orders[index];
+    final milestones = [
+      for (final m in order.milestones)
+        if (m.id == milestoneId) m.copyWithStatus(newStatus) else m,
+    ];
+    _orders[index] = order.copyWith(milestones: milestones);
+    notifyListeners();
+  }
+
+  /// Records the freelancer's delivery/submission and moves the order to
+  /// [OrderStatus.submitted].
+  void submitDelivery(String orderId, String note) {
+    final index = _orders.indexWhere((o) => o.id == orderId);
+    if (index == -1) return;
+    _orders[index] = _orders[index].copyWith(
+      status: OrderStatus.submitted,
+      deliveryNote: note,
+      deliveredAt: DateTime.now(),
+      note: 'Work submitted for review.',
+    );
+    notifyListeners();
+  }
+}
+
 /// Combines the app's runtime state into one object so the UI has a single
 /// place to read and update state.
 class AppStore extends ChangeNotifier {
@@ -277,17 +414,20 @@ class AppStore extends ChangeNotifier {
     ServicesController? services,
     JobsController? jobs,
     ProposalsController? proposals,
+    OrdersController? orders,
   }) : services = services ?? ServicesController(),
        jobs = jobs ?? JobsController(),
-       proposals = proposals ?? ProposalsController() {
+       proposals = proposals ?? ProposalsController(),
+       orders = orders ?? OrdersController() {
     // Forward child notifications so widgets listening to the store itself
-    // also rebuild when favorites, the user profile, jobs, services, or
-    // proposals change.
+    // also rebuild when favorites, the user profile, jobs, services,
+    // proposals, or orders change.
     favorites.addListener(notifyListeners);
     user.addListener(notifyListeners);
     this.services.addListener(notifyListeners);
     this.jobs.addListener(notifyListeners);
     this.proposals.addListener(notifyListeners);
+    this.orders.addListener(notifyListeners);
   }
 
   final FavoritesController favorites;
@@ -295,6 +435,7 @@ class AppStore extends ChangeNotifier {
   final ServicesController services;
   final JobsController jobs;
   final ProposalsController proposals;
+  final OrdersController orders;
 }
 
 /// Exposes the [AppStore] to the widget tree.

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/freelancer.dart';
 import '../models/job.dart';
+import '../models/order.dart';
 import '../models/proposal.dart';
 import '../models/service.dart';
 import '../screens/auth/forgot_password_screen.dart';
@@ -10,6 +11,10 @@ import '../screens/categories/categories_screen.dart';
 import '../screens/marketplace/freelancer_profile_screen.dart';
 import '../screens/marketplace/marketplace_shell.dart';
 import '../screens/marketplace/service_detail_screen.dart';
+import '../screens/orders/delivery_screen.dart';
+import '../screens/orders/milestones_screen.dart';
+import '../screens/orders/my_orders_screen.dart';
+import '../screens/orders/order_details_screen.dart';
 import '../screens/profile/edit_freelancer_profile_screen.dart';
 import '../screens/profile/edit_profile_screen.dart';
 import '../screens/profile/my_freelancer_profile_screen.dart';
@@ -46,6 +51,10 @@ abstract final class AppRoutes {
   static const String submitProposal = '/submit-proposal';
   static const String myProposals = '/my-proposals';
   static const String proposalStatus = '/proposal-status';
+  static const String myOrders = '/my-orders';
+  static const String orderDetails = '/order-details';
+  static const String milestones = '/milestones';
+  static const String delivery = '/delivery';
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -117,6 +126,23 @@ abstract final class AppRoutes {
         final proposal = settings.arguments as Proposal;
         return MaterialPageRoute(
           builder: (_) => ProposalStatusScreen(proposal: proposal),
+        );
+      case myOrders:
+        return MaterialPageRoute(builder: (_) => const MyOrdersScreen());
+      case orderDetails:
+        final order = settings.arguments as Order;
+        return MaterialPageRoute(
+          builder: (_) => OrderDetailsScreen(order: order),
+        );
+      case milestones:
+        final order = settings.arguments as Order;
+        return MaterialPageRoute(
+          builder: (_) => MilestonesScreen(order: order),
+        );
+      case delivery:
+        final order = settings.arguments as Order;
+        return MaterialPageRoute(
+          builder: (_) => DeliveryScreen(order: order),
         );
       default:
         return null;
