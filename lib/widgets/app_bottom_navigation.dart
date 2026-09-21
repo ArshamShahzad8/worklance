@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 
 /// WORKLANCE bottom navigation (Material 3 NavigationBar).
 ///
-/// Tabs: Home, Services, Jobs, Saved, Profile. The parent owns the selected
-/// index so tab state lives in one place.
+/// Tabs: Home, Services, Jobs, Work, Saved, Profile.
 class AppBottomNavigation extends StatelessWidget {
   const AppBottomNavigation({
     super.key,
@@ -32,6 +31,11 @@ class AppBottomNavigation extends StatelessWidget {
       label: 'Jobs',
     ),
     (
+      icon: Icons.folder_open_rounded,
+      selectedIcon: Icons.folder_rounded,
+      label: 'Work',
+    ),
+    (
       icon: Icons.favorite_border_rounded,
       selectedIcon: Icons.favorite_rounded,
       label: 'Saved',
@@ -48,6 +52,7 @@ class AppBottomNavigation extends StatelessWidget {
     return NavigationBar(
       selectedIndex: currentIndex,
       onDestinationSelected: onDestinationSelected,
+      labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       destinations: [
         for (final destination in _destinations)
           NavigationDestination(

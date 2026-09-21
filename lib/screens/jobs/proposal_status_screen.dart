@@ -295,17 +295,12 @@ class _DemoControlsCard extends StatelessWidget {
                   FilledButton.icon(
                     style: FilledButton.styleFrom(backgroundColor: AppColors.success),
                     onPressed: () {
-                      store.proposals.updateStatus(
-                        proposal.id,
-                        ProposalStatus.accepted,
-                        note: 'Simulated: client accepted (demo only).',
-                      );
                       // Accepting a proposal moves the work into an active
-                      // order/contract — the Week 5 continuation of the
-                      // Week 4 proposal flow.
-                      store.orders.createFromProposal(
-                        proposal,
-                        freelancer: store.user.user,
+                      // project — the Week 5 continuation of the Week 4
+                      // proposal flow.
+                      store.acceptProposal(
+                        proposal.id,
+                        note: 'Simulated: client accepted (demo only).',
                       );
                     },
                     icon: const Icon(Icons.check_rounded, size: 18),
@@ -331,9 +326,8 @@ class _DemoControlsCard extends StatelessWidget {
   }
 }
 
-/// Shown once a proposal is accepted: confirms the order/contract exists
-/// and links straight to Project Details — the Week 5 continuation of this
-/// screen's flow.
+/// Week 5 bridge: an accepted proposal becomes a project, so this card
+/// links straight to it.
 class _OrderLaunchCard extends StatelessWidget {
   const _OrderLaunchCard({required this.proposal});
 
@@ -343,46 +337,57 @@ class _OrderLaunchCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final store = AppScope.of(context);
-    final order = store.orders.getByProposalId(proposal.id);
-    if (order == null) return const SizedBox.shrink();
 
-    return Card(
-      color: AppColors.success.withValues(alpha: 0.08),
-      child: Padding(
-        padding: const EdgeInsets.all(AppConstants.spaceMd),
-        child: Row(
-          children: [
-            Icon(Icons.handshake_outlined, color: AppColors.success),
-            const SizedBox(width: AppConstants.spaceSm),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Order created',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
+    return ListenableBuilder(
+      listenable: store.projects,
+      builder: (context, _) {
+        final project = store.projects.getByProposalId(proposal.id);
+
+        return Card(
+          color: AppColors.success.withValues(alpha: 0.08),
+          child: Padding(
+            padding: const EdgeInsets.all(AppConstants.spaceMd),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.rocket_launch_outlined, size: 18, color: AppColors.success),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'This job is now an active project',
+                        style: theme.textTheme.titleSmall,
+                      ),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Track its milestones, progress and delivery from the project screen.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
                   ),
-                  Text(
-                    'This job is now an active contract.',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: AppConstants.spaceMd),
+                FilledButton.icon(
+                  style: FilledButton.styleFrom(backgroundColor: AppColors.success),
+                  onPressed: () {
+                    final target = project ?? store.acceptProposal(proposal.id);
+                    if (target == null) return;
+                    Navigator.of(context).pushNamed(
+                      AppRoutes.projectDetails,
+                      arguments: target,
+                    );
+                  },
+                  icon: const Icon(Icons.open_in_new_rounded, size: 18),
+                  label: const Text('Open Project'),
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pushNamed(
-                AppRoutes.orderDetails,
-                arguments: order,
-              ),
-              child: const Text('View Order'),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

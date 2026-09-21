@@ -33,6 +33,9 @@ abstract final class AppConstants {
   /// stay readable and never stretch edge to edge.
   static const double maxContentWidth = 480.0;
 
+  /// Maximum width for list views on wider screens.
+  static const double maxListWidth = 600.0;
+
   /// Formats a price with the app currency, e.g. `$350` or `$349.50`.
   static String formatPrice(double price) => price == price.roundToDouble()
       ? '$currencySymbol${price.toInt()}'
@@ -44,6 +47,15 @@ abstract final class AppConstants {
     if (hour < 12) return 'Good morning';
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
+  }
+
+  /// Formats a date as a short label, e.g. `Mar 15, 2026`.
+  static String formatShortDate(DateTime date) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
   /// Formats a past [dateTime] as a short relative label, e.g. `2h ago`,

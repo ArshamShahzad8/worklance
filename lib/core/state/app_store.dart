@@ -2,17 +2,14 @@ import 'package:flutter/widgets.dart';
 
 import '../../models/freelancer.dart';
 import '../../models/job.dart';
-import '../../models/milestone.dart';
-import '../../models/order.dart';
+import '../../models/project.dart';
 import '../../models/proposal.dart';
 import '../../models/service.dart';
 import '../../models/user.dart';
 import '../../data/repositories/job_repository.dart';
+import '../../data/repositories/project_repository.dart';
 
 /// In-memory favorite state for service cards.
-///
-/// Favorites live only for the current app session (no database), which is
-/// exactly what the Week 1 UI foundation requires.
 class FavoritesController extends ChangeNotifier {
   final Set<String> _ids = {};
 
@@ -25,9 +22,7 @@ class FavoritesController extends ChangeNotifier {
   }
 }
 
-/// Holds the current user profile so the greeting, profile screen, the
-/// freelancer profile screen and any future screen all read from one
-/// central place.
+/// Holds the current user profile.
 class UserController extends ChangeNotifier {
   UserController(this._user);
 
@@ -35,16 +30,9 @@ class UserController extends ChangeNotifier {
 
   UserProfile get user => _user;
 
-  /// The id used for services this user creates as a freelancer, and for
-  /// matching the user's own listings in [ServicesController].
   static const String selfFreelancerId = 'me';
-
-  /// The id used for jobs this user posts as a client.
   static const String selfClientId = 'me_client';
 
-  /// Represents the current user as a [JobClient], so posting a job (Post a
-  /// Job, Week 4) attaches the current user's identity the same way
-  /// [asFreelancer] does for services.
   JobClient get asClient => JobClient(
     id: selfClientId,
     name: _user.name,
@@ -58,9 +46,6 @@ class UserController extends ChangeNotifier {
     memberSince: _user.memberSince,
   );
 
-  /// Represents the current user as a [Freelancer], so the existing
-  /// Freelancer Profile screen (built in Week 1 for browsing other
-  /// freelancers) can be reused unmodified for the user's own profile.
   Freelancer get asFreelancer => Freelancer(
     id: selfFreelancerId,
     name: _user.name,
@@ -75,8 +60,6 @@ class UserController extends ChangeNotifier {
     completedJobs: _user.completedJobs,
   );
 
-  /// Generic profile update. Used by Registration and the Edit Profile
-  /// screen. Any argument left null keeps the current value.
   void update({
     String? name,
     String? email,
@@ -92,12 +75,6 @@ class UserController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Applies the email used at login (simulated auth).
-  ///
-  /// If the email matches the current profile (e.g. the user registered in
-  /// this session), the registered name is kept. Otherwise a display name is
-  /// derived from the email's local part so the prototype never falls back to
-  /// unrelated mock user data.
   void loginAs(String email) {
     final normalized = email.trim();
     final sameUser = _user.email.toLowerCase() == normalized.toLowerCase();
@@ -108,21 +85,27 @@ class UserController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Saves the freelancer-facing fields (bio + skills), marking the user as
-  /// a freelancer so the My Services / Create Service screens unlock.
   void updateFreelancerProfile({required String bio, required List<String> skills}) {
     _user = _user.copyWith(bio: bio, skills: skills, isFreelancer: true);
     notifyListeners();
   }
 
-  /// Updates the client-facing stats after this user posts a job (Post a
-  /// Job, Week 4), so their own client profile reflects real activity.
   void recordJobPosted() {
     _user = _user.copyWith(jobsPosted: _user.jobsPosted + 1);
     notifyListeners();
   }
 
-  /// "sarah.khan@example.com" -> "Sarah Khan".
+  /// Rolls a finished project into the user's profile stats (Week 5).
+  void recordProjectCompleted({
+    required ProjectRole role,
+    required double amount,
+  }) {
+    _user = role == ProjectRole.freelancer
+        ? _user.copyWith(completedJobs: _user.completedJobs + 1)
+        : _user.copyWith(totalSpent: _user.totalSpent + amount);
+    notifyListeners();
+  }
+
   static String _displayNameFromEmail(String email) {
     final local = email.split('@').first;
     final parts = local.split(RegExp(r'[._\-+]'));
@@ -135,10 +118,6 @@ class UserController extends ChangeNotifier {
 }
 
 /// Holds the services the current user offers as a freelancer.
-///
-/// Lives only for the current app session (no database yet — this is the
-/// Week 3 UI foundation for My Services / Create Service; a real API-backed
-/// repository can replace this controller later without touching the UI).
 class ServicesController extends ChangeNotifier {
   ServicesController([List<Service> initial = const []])
     : _services = List<Service>.from(initial);
@@ -172,12 +151,7 @@ class ServicesController extends ChangeNotifier {
   }
 }
 
-/// Holds every job in the marketplace: the seeded catalogue plus any jobs
-/// the current user posts as a client during this session.
-///
-/// Lives only for the current app session (no database yet — this is the
-/// Week 4 UI foundation for Find Jobs / Post a Job; a real API-backed
-/// repository can replace this controller later without touching the UI).
+/// Holds every job in the marketplace.
 class JobsController extends ChangeNotifier {
   JobsController([List<Job>? initial])
     : _jobs = List<Job>.from(initial ?? JobRepository.getAll());
@@ -193,15 +167,11 @@ class JobsController extends ChangeNotifier {
     return null;
   }
 
-  /// Adds a client-posted job to the top of the list.
   void add(Job job) {
     _jobs.insert(0, job);
     notifyListeners();
   }
 
-  /// Bumps a job's proposal count by one (called when a proposal is
-  /// submitted against it), keeping the count consistent everywhere the
-  /// job is shown without a full refetch.
   void incrementProposalsCount(String jobId) {
     final index = _jobs.indexWhere((j) => j.id == jobId);
     if (index == -1) return;
@@ -212,10 +182,7 @@ class JobsController extends ChangeNotifier {
   }
 }
 
-/// Holds the proposals the current user (as a freelancer) has submitted.
-///
-/// Lives only for the current app session — see [JobsController] for the
-/// same note on future API/backend readiness.
+/// Holds the proposals the current user has submitted.
 class ProposalsController extends ChangeNotifier {
   final List<Proposal> _proposals = [];
 
@@ -232,9 +199,6 @@ class ProposalsController extends ChangeNotifier {
     return null;
   }
 
-  /// Whether the current user has already applied to [jobId] — used for
-  /// duplicate-submission protection on the Job Details / Submit Proposal
-  /// screens.
   bool hasAppliedToJob(String jobId) =>
       _proposals.any((p) => p.job.id == jobId);
 
@@ -250,10 +214,6 @@ class ProposalsController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Updates a proposal's status and appends a timeline entry. In this
-  /// demo/local environment, status changes are simulated by the user
-  /// themselves (see the Proposal Status screen's "Demo Controls") rather
-  /// than by a real client.
   void updateStatus(String proposalId, ProposalStatus newStatus, {String? note}) {
     final index = _proposals.indexWhere((p) => p.id == proposalId);
     if (index == -1) return;
@@ -270,143 +230,202 @@ class ProposalsController extends ChangeNotifier {
   }
 }
 
-/// Holds the orders/contracts created once a proposal is accepted.
-///
-/// This is the Week 5 continuation of [ProposalsController]: an order is
-/// created from an accepted proposal and then tracked through its own
-/// lifecycle (Accepted → Active → Submitted → Completed), with a set of
-/// milestones underneath it. Lives only for the current app session, the
-/// same as every other controller here.
-class OrdersController extends ChangeNotifier {
-  final List<Order> _orders = [];
+/// Holds every project and order the current user is involved in (Week 5).
+class ProjectsController extends ChangeNotifier {
+  ProjectsController([List<Project>? initial])
+    : _projects = List<Project>.from(initial ?? ProjectRepository.getAll());
 
-  List<Order> getAll() {
-    final sorted = List<Order>.from(_orders)
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    return List.unmodifiable(sorted);
-  }
+  final List<Project> _projects;
 
-  /// Orders that are not yet completed — powers the Active Projects view.
-  List<Order> getActive() =>
-      getAll().where((o) => o.status != OrderStatus.completed).toList();
+  List<Project> getAll() => List.unmodifiable(_projects);
 
-  /// Orders that have been marked completed.
-  List<Order> getCompleted() =>
-      getAll().where((o) => o.status == OrderStatus.completed).toList();
-
-  Order? getById(String id) {
-    for (final order in _orders) {
-      if (order.id == id) return order;
+  Project? getById(String id) {
+    for (final project in _projects) {
+      if (project.id == id) return project;
     }
     return null;
   }
 
-  Order? getByProposalId(String proposalId) {
-    for (final order in _orders) {
-      if (order.proposalId == proposalId) return order;
+  List<Project> open({ProjectRole? role}) => _projects
+      .where((p) => p.status.isOpen && (role == null || p.role == role))
+      .toList();
+
+  int openCount({ProjectRole? role}) => open(role: role).length;
+
+  Project? getByProposalId(String proposalId) {
+    for (final project in _projects) {
+      if (project.proposalId == proposalId) return project;
     }
     return null;
   }
 
-  /// Creates a new order/contract from an accepted [Proposal].
-  ///
-  /// Generates a simple, even 3-milestone plan (Kickoff & Planning,
-  /// Core Delivery, Final Review & Handover) that splits the proposed
-  /// amount and spreads due dates across the proposal's estimated
-  /// duration, since there is no separate milestone-planning step in this
-  /// prototype. Returns the existing order instead of duplicating one if
-  /// this proposal already has an order.
-  Order createFromProposal(Proposal proposal, {required UserProfile freelancer}) {
-    final existing = getByProposalId(proposal.id);
-    if (existing != null) return existing;
+  Project? openOrderForService(String serviceId) {
+    for (final project in _projects) {
+      if (project.serviceId == serviceId && project.status.isOpen) {
+        return project;
+      }
+    }
+    return null;
+  }
 
-    final now = DateTime.now();
-    final perMilestone = proposal.proposedAmount / 3;
-    final milestones = [
-      Milestone(
-        id: '${proposal.id}_m1',
-        title: 'Kickoff & Planning',
-        description: 'Confirm requirements and outline the delivery plan.',
-        amount: perMilestone,
-        dueDate: now.add(const Duration(days: 5)),
-      ),
-      Milestone(
-        id: '${proposal.id}_m2',
-        title: 'Core Delivery',
-        description: 'Build and share the main project deliverables.',
-        amount: perMilestone,
-        dueDate: now.add(const Duration(days: 15)),
-      ),
-      Milestone(
-        id: '${proposal.id}_m3',
-        title: 'Final Review & Handover',
-        description: 'Address feedback and hand over the finished work.',
-        amount: proposal.proposedAmount - (perMilestone * 2),
-        dueDate: now.add(const Duration(days: 25)),
-      ),
-    ];
+  void add(Project project) {
+    _projects.insert(0, project);
+    notifyListeners();
+  }
 
-    final order = Order(
-      id: 'order_${proposal.id}',
-      proposalId: proposal.id,
-      job: proposal.job,
-      freelancerName: freelancer.name,
-      freelancerAvatarColor: freelancer.avatarColor,
-      budget: proposal.proposedAmount,
-      deadline: now.add(const Duration(days: 30)),
-      createdAt: now,
-      milestones: milestones,
+  void start(String projectId, {String? note}) {
+    _updateStatus(
+      projectId,
+      ProjectStatus.active,
+      note: note ?? 'Work started.',
+      allowFrom: const {ProjectStatus.pending},
     );
-
-    _orders.insert(0, order);
-    notifyListeners();
-    return order;
   }
 
-  /// Updates an order's overall status and appends a timeline entry.
-  void updateStatus(String orderId, OrderStatus newStatus, {String? note}) {
-    final index = _orders.indexWhere((o) => o.id == orderId);
-    if (index == -1) return;
-    _orders[index] = _orders[index].copyWith(status: newStatus, note: note);
-    notifyListeners();
-  }
-
-  /// Updates a single milestone's status within an order. If every
-  /// milestone becomes completed and the order is still active, the order
-  /// itself is nudged forward so the overall status stays meaningful.
-  void updateMilestoneStatus(
-    String orderId,
+  void setMilestoneStatus(
+    String projectId,
     String milestoneId,
-    MilestoneStatus newStatus,
+    MilestoneStatus status,
   ) {
-    final index = _orders.indexWhere((o) => o.id == orderId);
+    final index = _indexOf(projectId);
     if (index == -1) return;
-    final order = _orders[index];
-    final milestones = [
-      for (final m in order.milestones)
-        if (m.id == milestoneId) m.copyWithStatus(newStatus) else m,
+    final project = _projects[index];
+    if (project.status.isFinal) return;
+
+    final updated = [
+      for (final milestone in project.milestones)
+        if (milestone.id == milestoneId)
+          milestone.copyWith(
+            status: status,
+            completedAt: status == MilestoneStatus.completed
+                ? DateTime.now()
+                : null,
+            clearCompletedAt: status != MilestoneStatus.completed,
+          )
+        else
+          milestone,
     ];
-    _orders[index] = order.copyWith(milestones: milestones);
+
+    var next = project.copyWith(milestones: updated);
+    if (next.status == ProjectStatus.pending &&
+        status != MilestoneStatus.pending) {
+      next = next.copyWithStatus(
+        ProjectStatus.active,
+        note: 'First milestone started.',
+      );
+    }
+    _projects[index] = next;
     notifyListeners();
   }
 
-  /// Records the freelancer's delivery/submission and moves the order to
-  /// [OrderStatus.submitted].
-  void submitDelivery(String orderId, String note) {
-    final index = _orders.indexWhere((o) => o.id == orderId);
-    if (index == -1) return;
-    _orders[index] = _orders[index].copyWith(
-      status: OrderStatus.submitted,
-      deliveryNote: note,
-      deliveredAt: DateTime.now(),
-      note: 'Work submitted for review.',
+  ProjectDelivery? submitDelivery(
+    String projectId, {
+    required String message,
+    List<String> attachments = const [],
+  }) {
+    final index = _indexOf(projectId);
+    if (index == -1) return null;
+    final project = _projects[index];
+    if (project.status.isFinal) return null;
+
+    final delivery = ProjectDelivery(
+      id: 'delivery_${DateTime.now().millisecondsSinceEpoch}',
+      message: message,
+      submittedAt: DateTime.now(),
+      attachments: List<String>.unmodifiable(attachments),
+      revisionNumber: project.deliveries.length + 1,
     );
+
+    _projects[index] = project
+        .copyWith(deliveries: [...project.deliveries, delivery])
+        .copyWithStatus(
+          ProjectStatus.submitted,
+          note: delivery.isRevision
+              ? 'Revision ${delivery.revisionNumber - 1} submitted.'
+              : 'Delivery submitted for review.',
+        );
     notifyListeners();
+    return delivery;
+  }
+
+  void requestRevision(String projectId, String note) {
+    final index = _indexOf(projectId);
+    if (index == -1) return;
+    final project = _projects[index];
+    if (project.status != ProjectStatus.submitted) return;
+
+    final deliveries = [...project.deliveries];
+    if (deliveries.isNotEmpty) {
+      deliveries[deliveries.length - 1] = deliveries.last.copyWith(
+        revisionNote: note,
+      );
+    }
+
+    _projects[index] = project
+        .copyWith(deliveries: deliveries)
+        .copyWithStatus(ProjectStatus.active, note: 'Revision requested: $note');
+    notifyListeners();
+  }
+
+  void complete(String projectId, {String? note}) {
+    final index = _indexOf(projectId);
+    if (index == -1) return;
+    final project = _projects[index];
+    if (project.status.isFinal) return;
+
+    _projects[index] = project
+        .copyWith(milestones: _completeAll(project.milestones))
+        .copyWithStatus(
+          ProjectStatus.completed,
+          note: note ?? 'Delivery approved. Payment released.',
+        );
+    notifyListeners();
+  }
+
+  void cancel(String projectId, {String? reason}) {
+    _updateStatus(
+      projectId,
+      ProjectStatus.cancelled,
+      note: reason == null || reason.trim().isEmpty
+          ? 'Cancelled.'
+          : 'Cancelled: ${reason.trim()}',
+      allowFrom: const {ProjectStatus.pending, ProjectStatus.active},
+    );
+  }
+
+  int _indexOf(String projectId) =>
+      _projects.indexWhere((p) => p.id == projectId);
+
+  void _updateStatus(
+    String projectId,
+    ProjectStatus status, {
+    String? note,
+    Set<ProjectStatus> allowFrom = const {},
+  }) {
+    final index = _indexOf(projectId);
+    if (index == -1) return;
+    final project = _projects[index];
+    if (allowFrom.isNotEmpty && !allowFrom.contains(project.status)) return;
+    _projects[index] = project.copyWithStatus(status, note: note);
+    notifyListeners();
+  }
+
+  static List<Milestone> _completeAll(List<Milestone> milestones) {
+    final now = DateTime.now();
+    return [
+      for (final milestone in milestones)
+        if (milestone.isCompleted)
+          milestone
+        else
+          milestone.copyWith(
+            status: MilestoneStatus.completed,
+            completedAt: now,
+          ),
+    ];
   }
 }
 
-/// Combines the app's runtime state into one object so the UI has a single
-/// place to read and update state.
+/// Combines the app's runtime state into one object.
 class AppStore extends ChangeNotifier {
   AppStore({
     required this.favorites,
@@ -414,20 +433,17 @@ class AppStore extends ChangeNotifier {
     ServicesController? services,
     JobsController? jobs,
     ProposalsController? proposals,
-    OrdersController? orders,
+    ProjectsController? projects,
   }) : services = services ?? ServicesController(),
        jobs = jobs ?? JobsController(),
        proposals = proposals ?? ProposalsController(),
-       orders = orders ?? OrdersController() {
-    // Forward child notifications so widgets listening to the store itself
-    // also rebuild when favorites, the user profile, jobs, services,
-    // proposals, or orders change.
+       projects = projects ?? ProjectsController() {
     favorites.addListener(notifyListeners);
     user.addListener(notifyListeners);
     this.services.addListener(notifyListeners);
     this.jobs.addListener(notifyListeners);
     this.proposals.addListener(notifyListeners);
-    this.orders.addListener(notifyListeners);
+    this.projects.addListener(notifyListeners);
   }
 
   final FavoritesController favorites;
@@ -435,13 +451,50 @@ class AppStore extends ChangeNotifier {
   final ServicesController services;
   final JobsController jobs;
   final ProposalsController proposals;
-  final OrdersController orders;
+  final ProjectsController projects;
+
+  /// Places an order for [service] and returns the resulting project (Week 5).
+  Project placeServiceOrder(Service service) {
+    final existing = projects.openOrderForService(service.id);
+    if (existing != null) return existing;
+
+    final profile = user.user;
+    final project = Project.fromServiceOrder(
+      service: service,
+      clientName: profile.name,
+      clientAvatarColor: profile.avatarColor,
+    );
+    projects.add(project);
+    return project;
+  }
+
+  /// Marks a proposal accepted and opens the project (Week 5).
+  Project? acceptProposal(String proposalId, {String? note}) {
+    proposals.updateStatus(proposalId, ProposalStatus.accepted, note: note);
+    final proposal = proposals.getById(proposalId);
+    if (proposal == null) return null;
+
+    final existing = projects.getByProposalId(proposalId);
+    if (existing != null) return existing;
+
+    final project = Project.fromAcceptedProposal(
+      proposal: proposal,
+      freelancer: user.asFreelancer,
+    );
+    projects.add(project);
+    return project;
+  }
+
+  /// Completes a project and rolls the result into the user's profile stats.
+  void completeProject(String projectId, {String? note}) {
+    final project = projects.getById(projectId);
+    if (project == null || project.status.isFinal) return;
+    projects.complete(projectId, note: note);
+    user.recordProjectCompleted(role: project.role, amount: project.amount);
+  }
 }
 
 /// Exposes the [AppStore] to the widget tree.
-///
-/// Any widget can call `AppScope.of(context)` to read the store and will
-/// automatically rebuild when the store changes.
 class AppScope extends InheritedNotifier<AppStore> {
   const AppScope({super.key, required AppStore store, required super.child})
     : super(notifier: store);

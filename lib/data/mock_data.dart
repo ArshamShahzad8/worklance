@@ -4,6 +4,7 @@ import '../core/theme/app_colors.dart';
 import '../models/category.dart';
 import '../models/freelancer.dart';
 import '../models/job.dart';
+import '../models/project.dart';
 import '../models/service.dart';
 import '../models/user.dart';
 
@@ -794,6 +795,326 @@ abstract final class MockData {
       proposalsCount: 3,
       client: jobClients[7],
       location: 'Remote',
+    ),
+  ];
+
+  // --- Week 5: seeded projects & orders ---
+
+  static final DateTime _today = DateTime.now();
+
+  static List<Milestone> _withProgress(
+    List<Milestone> milestones,
+    int completedCount, {
+    bool startNext = false,
+  }) {
+    return [
+      for (var i = 0; i < milestones.length; i++)
+        if (i < completedCount)
+          milestones[i].copyWith(
+            status: MilestoneStatus.completed,
+            completedAt: milestones[i].dueDate,
+          )
+        else if (startNext && i == completedCount)
+          milestones[i].copyWith(status: MilestoneStatus.inProgress)
+        else
+          milestones[i],
+    ];
+  }
+
+  static final List<Project> projects = [
+    Project(
+      id: 'order_seed_uiux',
+      title: 'UI/UX Design for Apps & Websites',
+      description:
+          'Research-driven UI/UX design: user flows, wireframes, high-fidelity '
+          'mockups and a reusable design system tailored to your brand.',
+      role: ProjectRole.client,
+      source: ProjectSource.serviceOrder,
+      category: categories[2],
+      amount: 400,
+      createdAt: _today.subtract(const Duration(days: 9)),
+      dueDate: _today.add(const Duration(days: 5)),
+      status: ProjectStatus.active,
+      serviceId: 's_uiux_design',
+      freelancerName: freelancers[2].name,
+      freelancerTitle: freelancers[2].title,
+      freelancerAvatarColor: freelancers[2].avatarColor,
+      clientName: currentUser.name,
+      clientAvatarColor: currentUser.avatarColor,
+      milestones: _withProgress(
+        Project.defaultMilestones(
+          projectId: 'order_seed_uiux',
+          total: 400,
+          start: _today.subtract(const Duration(days: 9)),
+          end: _today.add(const Duration(days: 5)),
+        ),
+        1,
+        startNext: true,
+      ),
+      statusHistory: [
+        ProjectEvent(
+          status: ProjectStatus.pending,
+          timestamp: _today.subtract(const Duration(days: 9)),
+          note: 'Order placed with ${freelancers[2].name}.',
+        ),
+        ProjectEvent(
+          status: ProjectStatus.active,
+          timestamp: _today.subtract(const Duration(days: 8)),
+          note: 'Kickoff call done — work started.',
+        ),
+      ],
+    ),
+    Project(
+      id: 'order_seed_logo',
+      title: 'Logo Design & Brand Identity',
+      description:
+          'A distinctive logo plus the brand basics around it: color palette, '
+          'typography and usage guidelines delivered as print-ready files.',
+      role: ProjectRole.client,
+      source: ProjectSource.serviceOrder,
+      category: categories[3],
+      amount: 180,
+      createdAt: _today.subtract(const Duration(days: 12)),
+      dueDate: _today.add(const Duration(days: 2)),
+      status: ProjectStatus.submitted,
+      serviceId: 's_logo_brand',
+      freelancerName: freelancers[4].name,
+      freelancerTitle: freelancers[4].title,
+      freelancerAvatarColor: freelancers[4].avatarColor,
+      clientName: currentUser.name,
+      clientAvatarColor: currentUser.avatarColor,
+      milestones: _withProgress(
+        Project.defaultMilestones(
+          projectId: 'order_seed_logo',
+          total: 180,
+          start: _today.subtract(const Duration(days: 12)),
+          end: _today.add(const Duration(days: 2)),
+        ),
+        2,
+        startNext: true,
+      ),
+      deliveries: [
+        ProjectDelivery(
+          id: 'delivery_seed_logo_1',
+          message:
+              'First full delivery: primary logo, monochrome variant, color '
+              'palette and a one-page usage guide.',
+          submittedAt: _today.subtract(const Duration(days: 1)),
+          attachments: const ['worklance-logo-pack.zip', 'brand-guidelines.pdf'],
+        ),
+      ],
+      statusHistory: [
+        ProjectEvent(
+          status: ProjectStatus.pending,
+          timestamp: _today.subtract(const Duration(days: 12)),
+          note: 'Order placed with ${freelancers[4].name}.',
+        ),
+        ProjectEvent(
+          status: ProjectStatus.active,
+          timestamp: _today.subtract(const Duration(days: 11)),
+        ),
+        ProjectEvent(
+          status: ProjectStatus.submitted,
+          timestamp: _today.subtract(const Duration(days: 1)),
+          note: 'Delivery submitted — review and approve to release payment.',
+        ),
+      ],
+    ),
+    Project(
+      id: 'project_seed_fintech',
+      title: 'Flutter Developer for Mobile Banking App',
+      description:
+          'Implement secure authentication, real-time transaction feeds and a '
+          'polished onboarding flow for a mobile-first banking app.',
+      role: ProjectRole.freelancer,
+      source: ProjectSource.jobContract,
+      category: categories[1],
+      amount: 3200,
+      createdAt: _today.subtract(const Duration(days: 20)),
+      dueDate: _today.add(const Duration(days: 22)),
+      status: ProjectStatus.active,
+      jobId: 'job_flutter_fintech',
+      freelancerName: currentUser.name,
+      freelancerTitle: currentUser.title,
+      freelancerAvatarColor: currentUser.avatarColor,
+      clientName: jobClients[0].name,
+      clientAvatarColor: jobClients[0].avatarColor,
+      milestones: _withProgress(
+        Project.defaultMilestones(
+          projectId: 'project_seed_fintech',
+          total: 3200,
+          start: _today.subtract(const Duration(days: 20)),
+          end: _today.add(const Duration(days: 22)),
+        ),
+        1,
+        startNext: true,
+      ),
+      statusHistory: [
+        ProjectEvent(
+          status: ProjectStatus.pending,
+          timestamp: _today.subtract(const Duration(days: 20)),
+          note: '${jobClients[0].name} accepted your proposal.',
+        ),
+        ProjectEvent(
+          status: ProjectStatus.active,
+          timestamp: _today.subtract(const Duration(days: 19)),
+          note: 'Contract started.',
+        ),
+      ],
+    ),
+    Project(
+      id: 'project_seed_health',
+      title: 'Health Tracking App — Onboarding Revamp',
+      description:
+          'Rework the first-run experience of a health tracking app: new '
+          'onboarding screens, a clearer permissions flow and a short '
+          'handover doc for the in-house team.',
+      role: ProjectRole.freelancer,
+      source: ProjectSource.jobContract,
+      category: categories[2],
+      amount: 750,
+      createdAt: _today.subtract(const Duration(days: 2)),
+      dueDate: _today.add(const Duration(days: 26)),
+      status: ProjectStatus.pending,
+      freelancerName: currentUser.name,
+      freelancerTitle: currentUser.title,
+      freelancerAvatarColor: currentUser.avatarColor,
+      clientName: jobClients[1].name,
+      clientAvatarColor: jobClients[1].avatarColor,
+      milestones: Project.defaultMilestones(
+        projectId: 'project_seed_health',
+        total: 750,
+        start: _today.subtract(const Duration(days: 2)),
+        end: _today.add(const Duration(days: 26)),
+      ),
+      statusHistory: [
+        ProjectEvent(
+          status: ProjectStatus.pending,
+          timestamp: _today.subtract(const Duration(days: 2)),
+          note: '${jobClients[1].name} accepted your proposal.',
+        ),
+      ],
+    ),
+    Project(
+      id: 'project_seed_pixelforge',
+      title: 'Marketing Site Rebuild for PixelForge',
+      description:
+          'A full rebuild of the studio marketing site: component library, '
+          'CMS-driven case studies and a 40% improvement in load time.',
+      role: ProjectRole.freelancer,
+      source: ProjectSource.jobContract,
+      category: categories[0],
+      amount: 1850,
+      createdAt: _today.subtract(const Duration(days: 74)),
+      dueDate: _today.subtract(const Duration(days: 26)),
+      completedAt: _today.subtract(const Duration(days: 24)),
+      status: ProjectStatus.completed,
+      freelancerName: currentUser.name,
+      freelancerTitle: currentUser.title,
+      freelancerAvatarColor: currentUser.avatarColor,
+      clientName: jobClients[2].name,
+      clientAvatarColor: jobClients[2].avatarColor,
+      milestones: _withProgress(
+        Project.defaultMilestones(
+          projectId: 'project_seed_pixelforge',
+          total: 1850,
+          start: _today.subtract(const Duration(days: 74)),
+          end: _today.subtract(const Duration(days: 26)),
+        ),
+        3,
+      ),
+      deliveries: [
+        ProjectDelivery(
+          id: 'delivery_seed_pixelforge_1',
+          message:
+              'Final handover: production build, component documentation and '
+              'a short walkthrough recording for the content team.',
+          submittedAt: _today.subtract(const Duration(days: 26)),
+          attachments: const ['handover-notes.pdf', 'walkthrough.mp4'],
+        ),
+      ],
+      statusHistory: [
+        ProjectEvent(
+          status: ProjectStatus.pending,
+          timestamp: _today.subtract(const Duration(days: 74)),
+          note: '${jobClients[2].name} accepted your proposal.',
+        ),
+        ProjectEvent(
+          status: ProjectStatus.active,
+          timestamp: _today.subtract(const Duration(days: 72)),
+        ),
+        ProjectEvent(
+          status: ProjectStatus.submitted,
+          timestamp: _today.subtract(const Duration(days: 26)),
+          note: 'Final delivery submitted.',
+        ),
+        ProjectEvent(
+          status: ProjectStatus.completed,
+          timestamp: _today.subtract(const Duration(days: 24)),
+          note: 'Client approved the delivery. Payment released.',
+        ),
+      ],
+    ),
+    Project(
+      id: 'order_seed_content',
+      title: 'SEO Blog & Website Content Writing',
+      description:
+          'Six long-form, search-optimised articles with keyword research, '
+          'internal linking and meta descriptions ready to publish.',
+      role: ProjectRole.client,
+      source: ProjectSource.serviceOrder,
+      category: categories[5],
+      amount: 220,
+      createdAt: _today.subtract(const Duration(days: 48)),
+      dueDate: _today.subtract(const Duration(days: 34)),
+      completedAt: _today.subtract(const Duration(days: 33)),
+      status: ProjectStatus.completed,
+      serviceId: 's_content_writing',
+      freelancerName: freelancers[7].name,
+      freelancerTitle: freelancers[7].title,
+      freelancerAvatarColor: freelancers[7].avatarColor,
+      clientName: currentUser.name,
+      clientAvatarColor: currentUser.avatarColor,
+      milestones: _withProgress(
+        Project.defaultMilestones(
+          projectId: 'order_seed_content',
+          total: 220,
+          start: _today.subtract(const Duration(days: 48)),
+          end: _today.subtract(const Duration(days: 34)),
+        ),
+        3,
+      ),
+      deliveries: [
+        ProjectDelivery(
+          id: 'delivery_seed_content_1',
+          message:
+              'All six articles delivered as Google Docs with meta titles, '
+              'descriptions and suggested internal links.',
+          submittedAt: _today.subtract(const Duration(days: 34)),
+          attachments: const ['articles-batch-1.docx'],
+        ),
+      ],
+      statusHistory: [
+        ProjectEvent(
+          status: ProjectStatus.pending,
+          timestamp: _today.subtract(const Duration(days: 48)),
+          note: 'Order placed with ${freelancers[7].name}.',
+        ),
+        ProjectEvent(
+          status: ProjectStatus.active,
+          timestamp: _today.subtract(const Duration(days: 47)),
+        ),
+        ProjectEvent(
+          status: ProjectStatus.submitted,
+          timestamp: _today.subtract(const Duration(days: 34)),
+          note: 'Delivery submitted.',
+        ),
+        ProjectEvent(
+          status: ProjectStatus.completed,
+          timestamp: _today.subtract(const Duration(days: 33)),
+          note: 'You approved the delivery. Payment released.',
+        ),
+      ],
     ),
   ];
 }

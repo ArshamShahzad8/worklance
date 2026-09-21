@@ -1,13 +1,53 @@
 import 'package:flutter/material.dart';
 
 import '../core/theme/app_colors.dart';
+import '../models/project.dart';
 import '../models/proposal.dart';
 
-/// Vertical timeline of [ProposalStatusEvent]s, newest first.
-class StatusTimeline extends StatelessWidget {
-  const StatusTimeline({super.key, required this.events});
+/// One dot on a [StatusTimeline], independent of which status enum it came from.
+class TimelineEntry {
+  const TimelineEntry({
+    required this.label,
+    required this.color,
+    required this.timestamp,
+    this.note,
+  });
 
-  final List<ProposalStatusEvent> events;
+  final String label;
+  final Color color;
+  final DateTime timestamp;
+  final String? note;
+}
+
+/// Vertical timeline of status changes, newest first.
+class StatusTimeline extends StatelessWidget {
+  /// Renders a proposal's status history (Week 4).
+  StatusTimeline({super.key, required List<ProposalStatusEvent> events})
+      : entries = [
+          for (final event in events)
+            TimelineEntry(
+              label: event.status.label,
+              color: event.status.color,
+              timestamp: event.timestamp,
+              note: event.note,
+            ),
+        ];
+
+  /// Renders a project's status history (Week 5).
+  StatusTimeline.fromProjectEvents({
+    super.key,
+    required List<ProjectEvent> events,
+  }) : entries = [
+          for (final event in events)
+            TimelineEntry(
+              label: event.status.label,
+              color: event.status.color,
+              timestamp: event.timestamp,
+              note: event.note,
+            ),
+        ];
+
+  final List<TimelineEntry> entries;
 
   String _formatTimestamp(DateTime date) {
     const months = [
@@ -23,7 +63,7 @@ class StatusTimeline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final reversed = events.reversed.toList();
+    final reversed = entries.reversed.toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,8 +82,8 @@ class StatusTimeline extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: i == 0
-                            ? reversed[i].status.color
-                            : reversed[i].status.color.withValues(alpha: 0.35),
+                            ? reversed[i].color
+                            : reversed[i].color.withValues(alpha: 0.35),
                       ),
                     ),
                     if (i != reversed.length - 1)
@@ -63,7 +103,7 @@ class StatusTimeline extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          reversed[i].status.label,
+                          reversed[i].label,
                           style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w700,
                             color: i == 0

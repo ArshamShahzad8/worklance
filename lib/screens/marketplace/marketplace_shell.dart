@@ -6,15 +6,14 @@ import '../../models/freelancer.dart';
 import '../../widgets/app_bottom_navigation.dart';
 import '../jobs/find_jobs_screen.dart';
 import '../profile/profile_screen.dart';
+import '../projects/my_work_screen.dart';
 import '../services/services_screen.dart';
 import 'marketplace_screen.dart';
 import 'saved_services_screen.dart';
 
 /// The main app shell after login/registration: holds the bottom-navigation
-/// tabs (Home, Services, Jobs, Saved, Profile) in an [IndexedStack].
-///
-/// The shell owns the selected tab and the category filter applied to the
-/// Services tab, so the Home screen can hand off a selected category.
+/// tabs (Home, Services, Jobs, Work, Saved, Profile) in an [IndexedStack].
+
 class MarketplaceShell extends StatefulWidget {
   const MarketplaceShell({super.key});
 
@@ -26,16 +25,12 @@ class _MarketplaceShellState extends State<MarketplaceShell> {
   int _tabIndex = 0;
   String? _servicesCategoryFilter;
 
-  // Tab indices, named so nothing elsewhere has to guess a bare number.
   static const int _servicesTab = 1;
   static const int _jobsTab = 2;
-  static const int _profileTab = 4;
+  static const int _profileTab = 5;
 
   void _onTabSelected(int index) => setState(() => _tabIndex = index);
 
-  /// Pushes the dedicated Categories screen. If the user picks a category
-  /// there, it's applied as a filter and the Services tab is shown — same
-  /// destination as tapping a category chip directly on Home.
   Future<void> _onSeeAllCategories() async {
     final result = await Navigator.of(context).pushNamed(AppRoutes.categories);
     if (result is Category) _onCategorySelected(result);
@@ -72,6 +67,10 @@ class _MarketplaceShellState extends State<MarketplaceShell> {
             onFreelancerTap: _onFreelancerTap,
           ),
           const FindJobsScreen(),
+          MyWorkScreen(
+            onBrowseServices: () => _onTabSelected(_servicesTab),
+            onFindJobs: () => _onTabSelected(_jobsTab),
+          ),
           SavedServicesScreen(onFreelancerTap: _onFreelancerTap),
           const ProfileScreen(),
         ],

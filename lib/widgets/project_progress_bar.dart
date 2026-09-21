@@ -2,58 +2,66 @@ import 'package:flutter/material.dart';
 
 import '../core/constants/app_constants.dart';
 import '../core/theme/app_colors.dart';
+import '../models/project.dart';
 
-/// Reusable visual progress section for a project/order: a labeled
-/// percentage plus a rounded progress bar, used on both the My Orders list
-/// and the Project Details screen so progress always looks the same.
+/// Progress bar for a [Project], colored by its current status.
 class ProjectProgressBar extends StatelessWidget {
   const ProjectProgressBar({
     super.key,
-    required this.progress,
-    this.label = 'Project progress',
-    this.color,
+    required this.project,
+    this.showLabel = true,
+    this.compact = false,
   });
 
-  /// 0.0 to 1.0.
-  final double progress;
-  final String label;
-  final Color? color;
+  final Project project;
+  final bool showLabel;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final barColor = color ?? AppColors.primary;
-    final percent = (progress.clamp(0, 1) * 100).round();
+    final color = project.status.color;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              label,
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: AppColors.textSecondary,
+        if (showLabel) ...[
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  project.totalMilestones == 0
+                      ? 'Progress'
+                      : '${project.completedMilestones} of ${project.totalMilestones} milestones',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style:
+                      (compact
+                              ? theme.textTheme.labelSmall
+                              : theme.textTheme.labelMedium)
+                          ?.copyWith(color: AppColors.textSecondary),
+                ),
               ),
-            ),
-            Text(
-              '$percent%',
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: barColor,
-                fontWeight: FontWeight.w700,
+              const SizedBox(width: AppConstants.spaceSm),
+              Text(
+                '${project.progressPercent}%',
+                style:
+                    (compact
+                            ? theme.textTheme.labelSmall
+                            : theme.textTheme.labelMedium)
+                        ?.copyWith(color: color, fontWeight: FontWeight.w700),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppConstants.spaceXs),
+            ],
+          ),
+          SizedBox(height: compact ? 4 : AppConstants.spaceSm),
+        ],
         ClipRRect(
           borderRadius: BorderRadius.circular(999),
           child: LinearProgressIndicator(
-            value: progress.clamp(0, 1),
-            minHeight: 8,
+            value: project.progress,
+            minHeight: compact ? 5 : 8,
             backgroundColor: AppColors.surfaceVariant,
-            valueColor: AlwaysStoppedAnimation<Color>(barColor),
+            valueColor: AlwaysStoppedAnimation<Color>(color),
           ),
         ),
       ],

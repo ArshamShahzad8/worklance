@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/freelancer.dart';
 import '../models/job.dart';
-import '../models/order.dart';
+import '../models/project.dart';
 import '../models/proposal.dart';
 import '../models/service.dart';
 import '../screens/auth/forgot_password_screen.dart';
@@ -11,10 +11,6 @@ import '../screens/categories/categories_screen.dart';
 import '../screens/marketplace/freelancer_profile_screen.dart';
 import '../screens/marketplace/marketplace_shell.dart';
 import '../screens/marketplace/service_detail_screen.dart';
-import '../screens/orders/delivery_screen.dart';
-import '../screens/orders/milestones_screen.dart';
-import '../screens/orders/my_orders_screen.dart';
-import '../screens/orders/order_details_screen.dart';
 import '../screens/profile/edit_freelancer_profile_screen.dart';
 import '../screens/profile/edit_profile_screen.dart';
 import '../screens/profile/my_freelancer_profile_screen.dart';
@@ -24,6 +20,13 @@ import '../screens/jobs/my_proposals_screen.dart';
 import '../screens/jobs/post_job_screen.dart';
 import '../screens/jobs/proposal_status_screen.dart';
 import '../screens/jobs/submit_proposal_screen.dart';
+import '../screens/projects/active_projects_screen.dart';
+import '../screens/projects/completed_projects_screen.dart';
+import '../screens/projects/my_orders_screen.dart';
+import '../screens/projects/my_work_screen.dart';
+import '../screens/projects/project_details_screen.dart';
+import '../screens/projects/project_milestones_screen.dart';
+import '../screens/projects/submit_delivery_screen.dart';
 import '../screens/services/create_service_screen.dart';
 import '../screens/services/my_services_screen.dart';
 import '../screens/splash/splash_screen.dart';
@@ -51,10 +54,15 @@ abstract final class AppRoutes {
   static const String submitProposal = '/submit-proposal';
   static const String myProposals = '/my-proposals';
   static const String proposalStatus = '/proposal-status';
+
+  // Week 5 — active project & order management.
+  static const String myWork = '/my-work';
   static const String myOrders = '/my-orders';
-  static const String orderDetails = '/order-details';
-  static const String milestones = '/milestones';
-  static const String delivery = '/delivery';
+  static const String activeProjects = '/active-projects';
+  static const String completedProjects = '/completed-projects';
+  static const String projectDetails = '/project-details';
+  static const String projectMilestones = '/project-milestones';
+  static const String submitDelivery = '/submit-delivery';
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -85,8 +93,6 @@ abstract final class AppRoutes {
       case categories:
         return MaterialPageRoute(
           builder: (context) => CategoriesScreen(
-            // Selecting a category pops this screen and hands the choice
-            // back to whoever pushed it (see MarketplaceShell).
             onCategorySelected: (category) =>
                 Navigator.of(context).pop(category),
           ),
@@ -127,22 +133,32 @@ abstract final class AppRoutes {
         return MaterialPageRoute(
           builder: (_) => ProposalStatusScreen(proposal: proposal),
         );
+      case myWork:
+        return MaterialPageRoute(builder: (_) => const MyWorkScreen());
       case myOrders:
         return MaterialPageRoute(builder: (_) => const MyOrdersScreen());
-      case orderDetails:
-        final order = settings.arguments as Order;
+      case activeProjects:
         return MaterialPageRoute(
-          builder: (_) => OrderDetailsScreen(order: order),
+          builder: (_) => const ActiveProjectsScreen(),
         );
-      case milestones:
-        final order = settings.arguments as Order;
+      case completedProjects:
         return MaterialPageRoute(
-          builder: (_) => MilestonesScreen(order: order),
+          builder: (_) => const CompletedProjectsScreen(),
         );
-      case delivery:
-        final order = settings.arguments as Order;
+      case projectDetails:
+        final project = settings.arguments as Project;
         return MaterialPageRoute(
-          builder: (_) => DeliveryScreen(order: order),
+          builder: (_) => ProjectDetailsScreen(project: project),
+        );
+      case projectMilestones:
+        final project = settings.arguments as Project;
+        return MaterialPageRoute(
+          builder: (_) => ProjectMilestonesScreen(project: project),
+        );
+      case submitDelivery:
+        final project = settings.arguments as Project;
+        return MaterialPageRoute(
+          builder: (_) => SubmitDeliveryScreen(project: project),
         );
       default:
         return null;
