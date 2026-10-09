@@ -88,7 +88,11 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
       slivers: [
         // ─── Hero header ─────────────────────────────────────────────
         SliverToBoxAdapter(
-          child: _HeroHeader(user: user, onProfileTap: widget.onProfileTap),
+          child: _HeroHeader(
+            user: user,
+            onProfileTap: widget.onProfileTap,
+            searchQuery: _query,
+          ),
         ),
 
         // ─── Stats cards ─────────────────────────────────────────────
@@ -152,8 +156,14 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
             child: AppSearchBar(
               key: const ValueKey('home_search'),
               controller: _searchController,
-              hintText: 'Search for services, skills or freelancers...',
+              hintText: 'Search services, freelancers, jobs...',
               onChanged: (value) => setState(() => _query = value),
+              // Hands the current query to the full marketplace search
+              // (Week 7): services, freelancers, jobs and categories.
+              onOpenFullSearch: (query) => Navigator.of(context).pushNamed(
+                AppRoutes.search,
+                arguments: query,
+              ),
             ),
           ),
         ),
@@ -234,6 +244,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                     final freelancer = _topFreelancers[index];
                     return FreelancerCard(
                       freelancer: freelancer,
+                      favorites: store.favorites,
                       onTap: () => widget.onFreelancerTap(freelancer),
                     );
                   },
@@ -313,10 +324,18 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
 
 /// Prominent hero header with marketplace branding, stats, and profile avatar.
 class _HeroHeader extends StatelessWidget {
-  const _HeroHeader({required this.user, required this.onProfileTap});
+  const _HeroHeader({
+    required this.user,
+    required this.onProfileTap,
+    this.searchQuery = '',
+  });
 
   final dynamic user;
   final VoidCallback onProfileTap;
+
+  /// Query already typed into the Home search bar, prefilled on the
+  /// full search screen when opened from the header.
+  final String searchQuery;
 
   @override
   Widget build(BuildContext context) {
@@ -345,15 +364,33 @@ class _HeroHeader extends StatelessWidget {
               // Top row: app name + notification + avatar
               Row(
                 children: [
-                  Text(
-                    AppConstants.appName,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 2,
+                  // Flexible so the brand text shrinks with ellipsis on very
+                  // narrow screens instead of overflowing the header row.
+                  Flexible(
+                    child: Text(
+                      AppConstants.appName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 2,
+                      ),
                     ),
                   ),
+                  const SizedBox(width: AppConstants.spaceSm),
                   const Spacer(),
+                  // Week 7: full marketplace search (services, freelancers,
+                  // jobs and categories) behind a dedicated entry point.
+                  _HeaderIconButton(
+                    icon: Icons.search_rounded,
+                    tooltip: 'Search marketplace',
+                    onPressed: () => Navigator.of(context).pushNamed(
+                      AppRoutes.search,
+                      arguments: searchQuery,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
                   _HeaderIconButton(
                     icon: Icons.notifications_none_rounded,
                     badgeCount: 3,
@@ -470,11 +507,13 @@ class _HeaderIconButton extends StatelessWidget {
     required this.icon,
     required this.onPressed,
     this.badgeCount = 0,
+    this.tooltip,
   });
 
   final IconData icon;
   final VoidCallback onPressed;
   final int badgeCount;
+  final String? tooltip;
 
   @override
   Widget build(BuildContext context) {
@@ -483,7 +522,7 @@ class _HeaderIconButton extends StatelessWidget {
       children: [
         IconButton(
           onPressed: onPressed,
-          tooltip: 'Notifications',
+          tooltip: tooltip ?? 'Notifications',
           icon: Icon(icon, color: Colors.white, size: 24),
         ),
         if (badgeCount > 0)

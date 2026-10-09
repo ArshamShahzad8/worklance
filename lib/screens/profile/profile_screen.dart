@@ -31,6 +31,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Navigator.of(context).pushNamed(AppRoutes.myServices);
   }
 
+  void _openDashboard() {
+    Navigator.of(context).pushNamed(AppRoutes.freelancerDashboard);
+  }
+
   void _openMyProposals() {
     Navigator.of(context).pushNamed(AppRoutes.myProposals);
   }
@@ -150,6 +154,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Card(
             child: Column(
               children: [
+                ListTile(
+                  leading: const Icon(Icons.dashboard_outlined),
+                  title: const Text('Freelancer Dashboard'),
+                  subtitle: const Text(
+                    'Stats, reviews, messages & notifications',
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: _openDashboard,
+                ),
+                const Divider(),
                 ListTile(
                   leading: const Icon(Icons.badge_outlined),
                   title: const Text('My Freelancer Profile'),

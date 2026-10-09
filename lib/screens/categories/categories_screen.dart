@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/routes.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/service_filters.dart';
 import '../../data/repositories/category_repository.dart';
@@ -67,6 +68,13 @@ class CategoriesScreen extends StatelessWidget {
                           category.id,
                         ),
                         onTap: () => onCategorySelected(category),
+                        // Week 7: the arrow opens the full category details
+                        // (services, jobs and freelancers) while tapping the
+                        // card body keeps the original select-and-filter flow.
+                        onDetails: () => Navigator.of(context).pushNamed(
+                          AppRoutes.categoryDetails,
+                          arguments: category,
+                        ),
                       );
                     },
                   );

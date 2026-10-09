@@ -444,8 +444,8 @@ void main() {
     testWidgets('saved tab shows empty state', (tester) async {
       await login(tester);
 
-      // Navigate to saved tab.
-      await tester.tap(navLabel('Saved'));
+      // Navigate to favorites tab.
+      await tester.tap(navLabel('Favorites'));
       await tester.pumpAndSettle();
       expect(find.text('No saved services yet'), findsOneWidget);
     });
@@ -456,9 +456,25 @@ void main() {
       (tester) async {
         await login(tester);
 
-        await tester.tap(
-          inHome(find.widgetWithText(TextButton, 'See All')).first,
+        // The Jobs promo card pushes the Categories header below the fold —
+        // scroll it into view before tapping (same as the search-bar test).
+        final seeAllButton = inHome(
+          find.widgetWithText(TextButton, 'See All'),
         );
+        final homeScrollable = find
+            .descendant(
+              of: find.byType(MarketplaceScreen),
+              matching: find.byType(Scrollable),
+            )
+            .first;
+        await tester.scrollUntilVisible(
+          seeAllButton,
+          200,
+          scrollable: homeScrollable,
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(seeAllButton.first);
         await tester.pumpAndSettle();
 
         // The dedicated Categories screen is now showing every category.
@@ -526,7 +542,7 @@ void main() {
 
       await tester.tap(navLabel('Services'));
       await tester.pumpAndSettle();
-      await tester.tap(navLabel('Saved'));
+      await tester.tap(navLabel('Favorites'));
       await tester.pumpAndSettle();
       await tester.tap(navLabel('Profile'));
       await tester.pumpAndSettle();

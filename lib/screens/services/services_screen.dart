@@ -10,6 +10,7 @@ import '../../data/repositories/service_repository.dart';
 import '../../models/freelancer.dart';
 import '../../models/service.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/filter_bottom_sheet.dart';
 import '../../widgets/search_bar.dart';
 import '../../widgets/service_card.dart';
 
@@ -84,6 +85,12 @@ class _ServicesScreenState extends State<ServicesScreen> {
         result.sort((a, b) => b.price.compareTo(a.price));
       case _SortOption.fastestDelivery:
         result.sort((a, b) => a.deliveryDays.compareTo(b.deliveryDays));
+      case _SortOption.mostPopular:
+        // Popularity = how many reviews the service's freelancer has earned.
+        result.sort((a, b) {
+          final cmp = b.reviewCount.compareTo(a.reviewCount);
+          return cmp != 0 ? cmp : b.rating.compareTo(a.rating);
+        });
     }
     return result;
   }
@@ -123,22 +130,12 @@ class _ServicesScreenState extends State<ServicesScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => _FilterBottomSheet(
-        maxPrice: _filter.maxPrice,
-        minRating: _filter.minRating,
-        maxDeliveryDays: _filter.maxDeliveryDays,
-        onApply: (price, rating, delivery) {
-          setState(() {
-            _filter = _filter.copyWith(
-              maxPrice: price,
-              clearMaxPrice: price == null,
-              minRating: rating,
-              clearMinRating: rating == null,
-              maxDeliveryDays: delivery,
-              clearMaxDeliveryDays: delivery == null,
-            );
-          });
-        },
+      builder: (context) => FilterBottomSheet(
+        filter: _filter,
+        // Category selection stays on the chip row above, so the sheet
+        // only edits price/rating/delivery.
+        categories: const [],
+        onApply: (filter) => setState(() => _filter = filter),
       ),
     );
   }
@@ -207,61 +204,11 @@ class _ServicesScreenState extends State<ServicesScreen> {
                   ),
                 ],
                 const SizedBox(width: 8),
-                // Filter button
-                GestureDetector(
-                  onTap: _showFilterSheet,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _hasActiveFilters
-                          ? AppColors.primary
-                          : AppColors.surface,
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(
-                        color: _hasActiveFilters
-                            ? AppColors.primary
-                            : AppColors.border,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.tune_rounded,
-                          size: 18,
-                          color: _hasActiveFilters
-                              ? Colors.white
-                              : AppColors.primary,
-                        ),
-                        if (_activeFilterCount > 0) ...[
-                          const SizedBox(width: 4),
-                          Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: _hasActiveFilters
-                                  ? Colors.white
-                                  : AppColors.primary,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Text(
-                              '$_activeFilterCount',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: _hasActiveFilters
-                                    ? AppColors.primary
-                                    : Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
+                // Filter button (shared widget, Week 7).
+                FilterButton(
+                  active: _hasActiveFilters,
+                  filterCount: _activeFilterCount,
+                  onPressed: _showFilterSheet,
                 ),
               ],
             ),
@@ -386,189 +333,13 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-/// Bottom sheet for advanced filtering: price range, minimum rating,
-/// and maximum delivery days.
-class _FilterBottomSheet extends StatefulWidget {
-  const _FilterBottomSheet({
-    this.maxPrice,
-    this.minRating,
-    this.maxDeliveryDays,
-    required this.onApply,
-  });
-
-  final double? maxPrice;
-  final double? minRating;
-  final int? maxDeliveryDays;
-  final void Function(double? price, double? rating, int? delivery) onApply;
-
-  @override
-  State<_FilterBottomSheet> createState() => _FilterBottomSheetState();
-}
-
-class _FilterBottomSheetState extends State<_FilterBottomSheet> {
-  late double? _maxPrice = widget.maxPrice;
-  late double? _minRating = widget.minRating;
-  late int? _maxDeliveryDays = widget.maxDeliveryDays;
-
-  // Predefined price tiers for quick selection.
-  static final List<({double? value, String label})> _priceOptions = [
-    (value: null, label: 'Any'),
-    (value: 100, label: 'Under \$100'),
-    (value: 200, label: 'Under \$200'),
-    (value: 300, label: 'Under \$300'),
-    (value: 500, label: 'Under \$500'),
-  ];
-
-  // Rating tiers.
-  static final List<({double? value, String label})> _ratingOptions = [
-    (value: null, label: 'Any'),
-    (value: 4.0, label: '4.0+'),
-    (value: 4.5, label: '4.5+'),
-    (value: 4.8, label: '4.8+'),
-  ];
-
-  // Delivery time tiers.
-  static final List<({int? value, String label})> _deliveryOptions = [
-    (value: null, label: 'Any'),
-    (value: 5, label: 'Under 5 days'),
-    (value: 10, label: 'Under 10 days'),
-    (value: 14, label: 'Under 14 days'),
-    (value: 21, label: 'Under 21 days'),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        AppConstants.spaceLg,
-        AppConstants.spaceLg,
-        AppConstants.spaceLg,
-        MediaQuery.of(context).viewInsets.bottom + AppConstants.spaceLg,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Filter Services',
-                  style: theme.textTheme.titleMedium,
-                ),
-              ),
-              IconButton(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.close_rounded),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppConstants.spaceMd),
-
-          // --- Price range ---
-          Text('Price Range', style: theme.textTheme.titleSmall),
-          const SizedBox(height: AppConstants.spaceSm),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _priceOptions.map((option) {
-              final isSelected = _maxPrice == option.value;
-              return ChoiceChip(
-                label: Text(option.label),
-                selected: isSelected,
-                onSelected: (_) {
-                  setState(() => _maxPrice = option.value);
-                },
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: AppConstants.spaceLg),
-
-          // --- Minimum rating ---
-          Text('Minimum Rating', style: theme.textTheme.titleSmall),
-          const SizedBox(height: AppConstants.spaceSm),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _ratingOptions.map((option) {
-              final isSelected = _minRating == option.value;
-              return ChoiceChip(
-                avatar: option.value != null
-                    ? Icon(
-                        Icons.star_rounded,
-                        size: 16,
-                        color: isSelected ? Colors.white : AppColors.accent,
-                      )
-                    : null,
-                label: Text(option.label),
-                selected: isSelected,
-                onSelected: (_) {
-                  setState(() => _minRating = option.value);
-                },
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: AppConstants.spaceLg),
-
-          // --- Delivery time ---
-          Text('Delivery Time', style: theme.textTheme.titleSmall),
-          const SizedBox(height: AppConstants.spaceSm),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _deliveryOptions.map((option) {
-              final isSelected = _maxDeliveryDays == option.value;
-              return ChoiceChip(
-                label: Text(option.label),
-                selected: isSelected,
-                onSelected: (_) {
-                  setState(() => _maxDeliveryDays = option.value);
-                },
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: AppConstants.spaceLg),
-
-          // --- Actions ---
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    setState(() {
-                      _maxPrice = null;
-                      _minRating = null;
-                      _maxDeliveryDays = null;
-                    });
-                  },
-                  child: const Text('Reset'),
-                ),
-              ),
-              const SizedBox(width: AppConstants.spaceMd),
-              Expanded(
-                child: FilledButton(
-                  onPressed: () {
-                    widget.onApply(_maxPrice, _minRating, _maxDeliveryDays);
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Apply Filters'),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 /// Sort options for the services listing.
 enum _SortOption {
   recommended('Recommended'),
   highestRated('Highest Rated'),
   lowestPrice('Lowest Price'),
   highestPrice('Highest Price'),
+  mostPopular('Most Popular'),
   fastestDelivery('Fastest');
 
   const _SortOption(this.label);

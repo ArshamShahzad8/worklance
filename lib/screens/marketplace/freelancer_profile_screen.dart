@@ -75,6 +75,25 @@ class FreelancerProfileScreen extends StatelessWidget {
               onPressed: onEditProfile,
               icon: const Icon(Icons.edit_outlined),
             ),
+          if (!isOwnProfile)
+            ListenableBuilder(
+              listenable: store.favorites,
+              builder: (context, _) {
+                final isFavorite = store.favorites.isFavorite(freelancer.id);
+                return IconButton(
+                  tooltip: isFavorite
+                      ? 'Remove from favorites'
+                      : 'Add to favorites',
+                  onPressed: () => store.favorites.toggle(freelancer.id),
+                  icon: Icon(
+                    isFavorite
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
+                    color: isFavorite ? AppColors.error : AppColors.textMuted,
+                  ),
+                );
+              },
+            ),
         ],
       ),
       body: SingleChildScrollView(

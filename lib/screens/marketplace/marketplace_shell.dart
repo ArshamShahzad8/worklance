@@ -8,8 +8,8 @@ import '../jobs/find_jobs_screen.dart';
 import '../profile/profile_screen.dart';
 import '../projects/my_work_screen.dart';
 import '../services/services_screen.dart';
+import 'favorites_screen.dart';
 import 'marketplace_screen.dart';
-import 'saved_services_screen.dart';
 
 /// The main app shell after login/registration: holds the bottom-navigation
 /// tabs (Home, Services, Jobs, Work, Saved, Profile) in an [IndexedStack].
@@ -71,7 +71,7 @@ class _MarketplaceShellState extends State<MarketplaceShell> {
             onBrowseServices: () => _onTabSelected(_servicesTab),
             onFindJobs: () => _onTabSelected(_jobsTab),
           ),
-          SavedServicesScreen(onFreelancerTap: _onFreelancerTap),
+          FavoritesScreen(onFreelancerTap: _onFreelancerTap),
           const ProfileScreen(),
         ],
       ),

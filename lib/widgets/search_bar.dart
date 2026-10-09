@@ -10,11 +10,18 @@ class AppSearchBar extends StatefulWidget {
     required this.controller,
     required this.onChanged,
     this.hintText = 'Search for services...',
+    this.onOpenFullSearch,
   });
 
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
   final String hintText;
+
+  /// When provided, a trailing "open full search" icon appears that hands
+  /// the current query to the dedicated marketplace search screen
+  /// (Week 7) — used on the Home tab so users can search freelancers,
+  /// jobs and categories too, not just services.
+  final ValueChanged<String>? onOpenFullSearch;
 
   @override
   State<AppSearchBar> createState() => _AppSearchBarState();
@@ -58,12 +65,26 @@ class _AppSearchBarState extends State<AppSearchBar> {
       decoration: InputDecoration(
         hintText: widget.hintText,
         prefixIcon: const Icon(Icons.search_rounded),
-        suffixIcon: widget.controller.text.isEmpty
+        suffixIcon: widget.controller.text.isEmpty &&
+                widget.onOpenFullSearch == null
             ? null
-            : IconButton(
-                onPressed: _clear,
-                tooltip: 'Clear search',
-                icon: const Icon(Icons.close_rounded),
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (widget.controller.text.isNotEmpty)
+                    IconButton(
+                      onPressed: _clear,
+                      tooltip: 'Clear search',
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  if (widget.onOpenFullSearch != null)
+                    IconButton(
+                      onPressed: () =>
+                          widget.onOpenFullSearch!(widget.controller.text),
+                      tooltip: 'Search everything',
+                      icon: const Icon(Icons.arrow_forward_rounded),
+                    ),
+                ],
               ),
       ),
     );

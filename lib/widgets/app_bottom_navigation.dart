@@ -38,7 +38,7 @@ class AppBottomNavigation extends StatelessWidget {
     (
       icon: Icons.favorite_border_rounded,
       selectedIcon: Icons.favorite_rounded,
-      label: 'Saved',
+      label: 'Favorites',
     ),
     (
       icon: Icons.person_outline,

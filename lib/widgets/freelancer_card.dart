@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/constants/app_constants.dart';
+import '../core/state/app_store.dart';
 import '../core/theme/app_colors.dart';
 import '../models/freelancer.dart';
 import 'freelancer_avatar.dart';
@@ -13,10 +14,15 @@ class FreelancerCard extends StatelessWidget {
     super.key,
     required this.freelancer,
     required this.onTap,
+    this.favorites,
   });
 
   final Freelancer freelancer;
   final VoidCallback onTap;
+
+  /// When provided, a heart button overlays the card so the freelancer can
+  /// be saved to/removed from favorites directly (Week 8).
+  final FavoritesController? favorites;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +35,9 @@ class FreelancerCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
-          child: Padding(
+          child: Stack(
+            children: [
+              Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -83,6 +91,34 @@ class FreelancerCard extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+          if (favorites != null)
+            Positioned(
+                top: 4,
+                right: 4,
+                child: ListenableBuilder(
+                  listenable: favorites!,
+                  builder: (context, _) {
+                    final isFavorite = favorites!.isFavorite(freelancer.id);
+                    return IconButton(
+                      onPressed: () => favorites!.toggle(freelancer.id),
+                      tooltip: isFavorite
+                          ? 'Remove from favorites'
+                          : 'Add to favorites',
+                      iconSize: 20,
+                      icon: Icon(
+                        isFavorite
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
+                        color: isFavorite
+                            ? AppColors.error
+                            : AppColors.textMuted,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ),

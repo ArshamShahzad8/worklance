@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import '../models/category.dart';
 import '../models/freelancer.dart';
 import '../models/job.dart';
 import '../models/project.dart';
 import '../models/proposal.dart';
 import '../models/service.dart';
 import '../screens/auth/forgot_password_screen.dart';
+import '../screens/dashboard/freelancer_dashboard_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/registration_screen.dart';
 import '../screens/categories/categories_screen.dart';
+import '../screens/categories/category_details_screen.dart';
 import '../screens/marketplace/freelancer_profile_screen.dart';
 import '../screens/marketplace/marketplace_shell.dart';
+import '../screens/marketplace/search_screen.dart';
 import '../screens/marketplace/service_detail_screen.dart';
 import '../screens/profile/edit_freelancer_profile_screen.dart';
 import '../screens/profile/edit_profile_screen.dart';
@@ -43,6 +47,13 @@ abstract final class AppRoutes {
   static const String serviceDetail = '/service-detail';
   static const String freelancerProfile = '/freelancer-profile';
   static const String categories = '/categories';
+
+  // Week 8 — freelancer dashboard.
+  static const String freelancerDashboard = '/freelancer-dashboard';
+
+  // Week 7 — marketplace search & category browsing.
+  static const String search = '/search';
+  static const String categoryDetails = '/category-details';
   static const String editProfile = '/edit-profile';
   static const String myFreelancerProfile = '/my-freelancer-profile';
   static const String editFreelancerProfile = '/edit-freelancer-profile';
@@ -96,6 +107,20 @@ abstract final class AppRoutes {
             onCategorySelected: (category) =>
                 Navigator.of(context).pop(category),
           ),
+        );
+      case freelancerDashboard:
+        return MaterialPageRoute(
+          builder: (_) => const FreelancerDashboardScreen(),
+        );
+      case search:
+        final initialQuery = settings.arguments as String? ?? '';
+        return MaterialPageRoute(
+          builder: (_) => MarketplaceSearchScreen(initialQuery: initialQuery),
+        );
+      case categoryDetails:
+        final category = settings.arguments as Category;
+        return MaterialPageRoute(
+          builder: (_) => CategoryDetailsScreen(category: category),
         );
       case editProfile:
         return MaterialPageRoute(builder: (_) => const EditProfileScreen());

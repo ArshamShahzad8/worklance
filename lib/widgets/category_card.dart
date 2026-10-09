@@ -15,6 +15,7 @@ class CategoryCard extends StatelessWidget {
     this.selected = false,
     this.compact = false,
     this.serviceCount,
+    this.onDetails,
   });
 
   final Category category;
@@ -22,6 +23,11 @@ class CategoryCard extends StatelessWidget {
   final bool selected;
   final bool compact;
   final int? serviceCount;
+
+  /// Optional secondary action rendered as a trailing arrow on the grid
+  /// card (e.g. open the category details screen) so the card body keeps
+  /// its original "select & filter" behaviour.
+  final VoidCallback? onDetails;
 
   @override
   Widget build(BuildContext context) {
@@ -107,13 +113,32 @@ class CategoryCard extends StatelessWidget {
                   style: theme.textTheme.bodySmall,
                 ),
               ),
-              if (serviceCount != null) ...[
+              if (serviceCount != null || onDetails != null) ...[
                 const SizedBox(height: 6),
-                Text(
-                  '$serviceCount services',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: AppColors.textMuted,
-                  ),
+                Row(
+                  children: [
+                    if (serviceCount != null)
+                      Text(
+                        '$serviceCount services',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    const Spacer(),
+                    if (onDetails != null)
+                      IconButton(
+                        onPressed: onDetails,
+                        tooltip: 'View category details',
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 32,
+                          minHeight: 32,
+                        ),
+                        icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                        color: AppColors.primary,
+                      ),
+                  ],
                 ),
               ],
             ],
